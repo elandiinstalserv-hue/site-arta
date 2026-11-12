@@ -115,9 +115,37 @@ textarea{resize:vertical}
         <h2>Produse <span id="cnt" style="color:var(--muted);font-weight:500;font-size:16px"></span></h2>
         <input id="search" type="search" placeholder="Caută…">
         <select id="fcat"><option value="">Toate categoriile</option></select>
+        <button class="btn light" id="impBtn">⬇ Importă din eMAG</button>
         <button class="btn" id="newBtn">＋ Adaugă produs</button>
       </div>
       <div class="list" id="list"></div>
+    </div>
+
+    <!-- IMPORT -->
+    <div id="impView" style="display:none">
+      <div class="bar"><h2>Import produse din eMAG</h2><button class="btn light sm" id="impBack">← Înapoi la listă</button></div>
+      <div class="card">
+        <p style="margin-top:0">Alege fișierul <b>artdeco-import-emag.json</b> (exportat din contul tău eMAG Marketplace). Produsele care există deja în magazin sunt sărite, așa că poți porni importul de mai multe ori fără să se dubleze nimic.</p>
+        <input type="file" id="impFile" accept=".json,application/json">
+        <div id="impSum" style="margin-top:16px"></div>
+        <div id="impOpts" style="display:none">
+          <div class="checks" style="margin-top:12px">
+            <label><input type="checkbox" id="impInactive"> Importă și ofertele inactive (vor fi ascunse în magazin)</label>
+          </div>
+          <label for="impMax">Câte poze per produs</label>
+          <select id="impMax" style="max-width:220px"><option value="8">Toate (până la 8)</option><option value="5">Primele 5</option><option value="3">Primele 3</option><option value="1">Doar poza principală</option></select>
+          <div class="foot" style="justify-content:flex-start">
+            <button class="btn" id="impStart">▶ Pornește importul</button>
+            <button class="btn light" id="impStop" style="display:none">⏸ Oprește</button>
+          </div>
+        </div>
+        <div id="impProg" style="display:none;margin-top:18px">
+          <div style="height:12px;background:#eee;border-radius:99px;overflow:hidden"><div id="impBar" style="height:100%;width:0;background:var(--blue);transition:width .3s"></div></div>
+          <p id="impStat" style="font-weight:600;margin:10px 0 6px"></p>
+          <div id="impLog" style="font-size:13px;color:var(--muted);max-height:220px;overflow:auto;background:#fafafa;border-radius:10px;padding:10px"></div>
+          <p class="hint">Lasă pagina deschisă cât rulează importul. Dacă îl oprești sau se întrerupe, îl poți porni din nou și continuă de unde a rămas.</p>
+        </div>
+      </div>
     </div>
 
     <!-- FORMULAR -->
@@ -178,9 +206,10 @@ textarea{resize:vertical}
 <script>
 const CATS = [
   {id:"tablouri", name:"Tablouri pictate"},
-  {id:"globuri", name:"Globuri pictate"},
+  {id:"globuri", name:"Crăciun – globuri și decorațiuni"},
   {id:"decoratiuni", name:"Decorațiuni & artizanat"},
   {id:"gablonturi", name:"Gablonturi"},
+  {id:"martisoare", name:"Mărțișoare"},
 ];
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -260,7 +289,7 @@ $("#list").onclick = async e => {
     catch(err) { toast(err.message); sd.disabled = false; }
   }
 };
-function showList(){ $("#formView").style.display="none"; $("#listView").style.display="block"; window.scrollTo(0,0); }
+function showList(){ $("#formView").style.display="none"; $("#impView").style.display="none"; $("#listView").style.display="block"; window.scrollTo(0,0); }
 $("#newBtn").onclick = () => openForm(null);
 
 /* ---------- formular ---------- */
@@ -359,6 +388,84 @@ $("#delBtn").onclick = async () => {
     uploadedNow = []; toast("Produs șters"); await load(); showList();
   } catch(err) { toast(err.message); }
 };
+
+/* ---------- import din eMAG ---------- */
+const slug = s => String(s || "produs").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "produs";
+let impItems = [], impStop = false, impRunning = false;
+$("#impBtn").onclick = () => { $("#listView").style.display="none"; $("#impView").style.display="block"; window.scrollTo(0,0); };
+$("#impBack").onclick = () => { if (impRunning) return toast("Oprește întâi importul."); load(); showList(); };
+function impPending(){
+  const have = new Set(products.map(p => p.id));
+  const withInactive = $("#impInactive").checked;
+  return impItems.filter(i => (withInactive || !i.hidden) && !have.has("emag-" + slug(i.importId)));
+}
+function impSummary(){
+  const have = new Set(products.map(p => p.id));
+  const by = {}; impItems.forEach(i => { by[i.cat] = (by[i.cat] || 0) + 1; });
+  const already = impItems.filter(i => have.has("emag-" + slug(i.importId))).length;
+  const inactive = impItems.filter(i => i.hidden).length;
+  const todo = impPending().length;
+  $("#impSum").innerHTML = `<div class="card" style="background:#F4F7FD;box-shadow:none">
+    <b>${impItems.length} produse în fișier</b> · ${impItems.length - inactive} active, ${inactive} inactive<br>
+    <span style="color:var(--muted)">${Object.entries(by).map(([c,n]) => `${esc(catName(c))}: ${n}`).join(" · ")}</span><br>
+    ${already ? `<span style="color:var(--green)">${already} sunt deja în magazin și vor fi sărite.</span><br>` : ""}
+    <b>De importat acum: ${todo}</b></div>`;
+  $("#impOpts").style.display = impItems.length ? "block" : "none";
+}
+$("#impInactive").onchange = impSummary;
+$("#impFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    impItems = (Array.isArray(data.items) ? data.items : []).filter(i => i && i.importId && i.name && i.price > 0);
+    if (!impItems.length) throw new Error("Fișierul nu conține produse.");
+    await load(); impSummary();
+  } catch(err) { $("#impSum").innerHTML = `<div class="err" style="display:block">Nu pot citi fișierul: ${esc(err.message)}</div>`; $("#impOpts").style.display="none"; }
+};
+function impLog(msg, bad){ const d=document.createElement("div"); d.textContent=msg; if(bad) d.style.color="var(--red)"; $("#impLog").prepend(d); }
+async function importImage(url){
+  const r = await fetch("/api/fetch-image?url=" + encodeURIComponent(url), { headers: { "x-admin-key": KEY } });
+  if (r.status === 401) { logout(); throw new Error("Sesiunea a expirat."); }
+  if (!r.ok) throw new Error("poza nu s-a putut descărca");
+  const src = await r.blob();
+  const blob = await shrink(new File([src], "poza", { type: src.type }));
+  const up = await api("/api/upload", { method:"POST", headers:{ "content-type": blob.type }, body: blob });
+  return up.url;
+}
+$("#impStart").onclick = async () => {
+  const list = impPending(); if (!list.length) return toast("Nu mai e nimic de importat.");
+  const max = +$("#impMax").value;
+  impStop = false; impRunning = true;
+  $("#impStart").style.display="none"; $("#impStop").style.display="inline-flex"; $("#impProg").style.display="block"; $("#impFile").disabled = true;
+  let ok = 0, bad = 0;
+  for (let k = 0; k < list.length && !impStop; k++) {
+    const it = list[k];
+    $("#impStat").textContent = `Import ${k+1} din ${list.length}: ${it.name}`;
+    $("#impBar").style.width = (k / list.length * 100) + "%";
+    const imgs = [];
+    try {
+      for (const u of (it.imageUrls || []).slice(0, max)) {
+        if (impStop) break;
+        try { imgs.push(await importImage(u)); } catch(e) { if (/expirat/.test(e.message)) throw e; }
+      }
+      if (impStop) { await Promise.all(imgs.map(u => api("/api/upload?url=" + encodeURIComponent(u), { method:"DELETE" }).catch(()=>{}))); break; }
+      await api("/api/products", { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({
+        importId: it.importId, name: it.name, cat: it.cat, price: it.price, attrs: it.attrs, material: it.material, tehnica: it.tehnica,
+        size: it.size, desc: it.desc, specs: it.specs || [], images: imgs, isNew: !!it.isNew, sold: !!it.sold, hidden: !!it.hidden, source: "emag" }) });
+      ok++; impLog(`✓ ${it.name} (${imgs.length} poze)`);
+    } catch(err) {
+      bad++; impLog(`✗ ${it.name}: ${err.message}`, true);
+      await Promise.all(imgs.map(u => api("/api/upload?url=" + encodeURIComponent(u), { method:"DELETE" }).catch(()=>{})));
+      if (/expirat/.test(err.message)) break;
+    }
+  }
+  $("#impBar").style.width = "100%";
+  $("#impStat").textContent = impStop ? `Import oprit: ${ok} produse importate${bad ? `, ${bad} cu erori` : ""}. Poți continua oricând.` : `Gata! ${ok} produse importate${bad ? `, ${bad} cu erori (le poți reîncerca pornind din nou importul)` : ""}.`;
+  impRunning = false; $("#impStart").style.display="inline-flex"; $("#impStop").style.display="none"; $("#impFile").disabled = false;
+  await load(); impSummary();
+};
+$("#impStop").onclick = () => { impStop = true; $("#impStat").textContent = "Se oprește după produsul curent…"; };
+window.addEventListener("beforeunload", e => { if (impRunning) { e.preventDefault(); e.returnValue = ""; } });
 
 if (KEY) {
   fetch("/api/login", { method:"POST", headers:{ "x-admin-key": KEY } }).then(r => r.ok ? start() : logout()).catch(logout);

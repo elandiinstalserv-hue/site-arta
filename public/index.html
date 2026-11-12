@@ -55,7 +55,7 @@ header{position:sticky;top:0;z-index:30;background:#fff;box-shadow:0 1px 0 var(-
 .ptitle{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 h1{font-size:32px;margin:0;font-weight:800;letter-spacing:-.4px}
 .script{font-family:"Great Vibes",cursive;color:var(--pink);font-size:30px;line-height:1}
-.subcats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.subcats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
 .sub{display:flex;align-items:center;gap:12px;background:#fff;border:0;border-radius:12px;padding:10px 14px 10px 10px;cursor:pointer;text-align:left;font-weight:600;font-size:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:.15s}
 .sub:hover{box-shadow:0 6px 18px rgba(0,0,0,.08)}
 .sub.on{outline:2px solid var(--blue)}
@@ -156,6 +156,8 @@ footer small{display:block;margin-top:28px;color:#8c8c92}
 .pd h2{font-size:23px;line-height:1.3}
 .pd .pp{font-size:28px;font-weight:800;margin:6px 0 16px}
 .pd ul{padding-left:18px;color:var(--muted);font-size:14px}
+.pdesc{font-size:15px;color:#333;max-height:320px;overflow:auto;padding-right:6px}
+.pdesc p{margin:0 0 10px}
 .pd .acts{display:flex;gap:10px;margin-top:18px}
 .pd .acts .btn{flex:1}
 .ship{font-size:13px;color:var(--muted);margin-top:14px;display:grid;gap:4px}
@@ -326,9 +328,10 @@ const PHONE_TXT = "0766 588 504";
 
 const CATS = [
   {id:"tablouri",   name:"Tablouri pictate",        icon:"🖼️", art:"tablou"},
-  {id:"globuri",    name:"Globuri pictate",         icon:"🎄", art:"glob"},
+  {id:"globuri",    name:"Crăciun",                 icon:"🎄", art:"glob"},
   {id:"decoratiuni",name:"Decorațiuni & artizanat", icon:"🏺", art:"vaza"},
   {id:"gablonturi", name:"Gablonturi",              icon:"💍", art:"colier"},
+  {id:"martisoare", name:"Mărțișoare",              icon:"🌸", art:"colier"},
 ];
 
 // Imagini provizorii (desene) – se înlocuiesc cu fotografiile reale
@@ -356,9 +359,11 @@ let PRODUCTS = [
 
 /* ============ LOGICĂ ============ */
 const visual = (p, i = 0) => (p.images && p.images[i])
-  ? `<img src="${p.images[i]}" alt="${p.name.replace(/"/g,'&quot;')}" loading="lazy">`
+  ? `<img src="${p.images[i]}" alt="${esc(p.name)}" loading="lazy">`
   : ART[p.art || (catOf(p.cat) || {}).art || "tablou"];
 const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const paras = s => String(s || "").split(/\n\s*\n/).map(x => `<p>${esc(x).replace(/\n/g, "<br>")}</p>`).join("");
 const lei = n => n.toLocaleString("ro-RO") + " lei";
 const catOf = id => CATS.find(c => c.id === id);
 const byId = id => PRODUCTS.find(p => p.id === id);
@@ -445,8 +450,8 @@ function renderGrid(){
         ${p.sold ? "" : `<button class="quick" data-add="${p.id}">Adaugă în coș</button>`}
       </div>
       <div class="cprice">${lei(p.price)}</div>
-      <div class="cname" title="${p.name}">${p.name}</div>
-      <div class="cattr">${p.attrs}</div>
+      <div class="cname" title="${esc(p.name)}">${esc(p.name)}</div>
+      <div class="cattr">${esc(p.attrs)}</div>
     </article>`).join("") :
     `<div class="empty">${state.onlyFav ? "Nu ai încă produse favorite. Apasă pe inimioară la produsele care îți plac." : "Nu am găsit produse pentru selecția ta. Încearcă alte filtre sau scrie-ne pentru o lucrare la comandă."}</div>`;
 }
@@ -495,8 +500,8 @@ $("#favBtn").onclick = () => { state.onlyFav = !state.onlyFav; state.cat="toate"
 function openProduct(id){
   const p = byId(id);
   $("#mbox").innerHTML = `<button class="x" data-close>×</button><div class="pd"><div><div class="pimg" id="pmain">${visual(p)}</div>${(p.images||[]).length>1?`<div class="thumbs">${p.images.map((u,i)=>`<button class="th ${i?"":"on"}" data-th="${i}"><img src="${u}" alt=""></button>`).join("")}</div>`:""}</div>
-    <div class="ptxt"><div class="crumbs">ArtDeco › ${catOf(p.cat).name}</div><h2>${p.name}</h2><div class="pp">${lei(p.price)}</div>
-    <p>${p.desc}</p><ul>${p.specs.map(s=>`<li>${s}</li>`).join("")}</ul>
+    <div class="ptxt"><div class="crumbs">ArtDeco › ${catOf(p.cat).name}</div><h2>${esc(p.name)}</h2>${p.attrs?`<div style="color:var(--muted);font-size:14px;margin-top:-4px">${esc(p.attrs)}</div>`:""}<div class="pp">${lei(p.price)}</div>
+    <div class="pdesc">${paras(p.desc)}</div>${(p.specs||[]).length?`<ul>${p.specs.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`:""}
     <div class="acts">${p.sold ? `<span class="btn" style="background:#777;cursor:default">Vândut – îl putem picta la comandă</span>` : `<button class="btn" data-add="${p.id}">Adaugă în coș</button>`}
       <button class="btn ghost" data-fav="${p.id}">${favs.includes(p.id)?"♥ Favorit":"♡ Favorite"}</button></div>
     <div class="ship"><span>🚚 Livrare prin curier în 1–3 zile lucrătoare</span><span>💵 Plata ramburs sau prin transfer</span><span>↩️ Retur în 14 zile</span></div></div></div>`;
@@ -513,7 +518,7 @@ function renderCart(){
   $("#total").textContent = lei(total);
   $("#lines").innerHTML = ids.length ? ids.map(id => { const p=byId(id); return `
     <div class="line"><div class="mini">${visual(p)}</div>
-      <div><h4>${p.name}</h4><div class="qty"><button data-q="${id}" data-d="-1">−</button><b>${cart[id]}</b><button data-q="${id}" data-d="1">+</button></div></div>
+      <div><h4>${esc(p.name)}</h4><div class="qty"><button data-q="${id}" data-d="-1">−</button><b>${cart[id]}</b><button data-q="${id}" data-d="1">+</button></div></div>
       <b>${lei(p.price*cart[id])}</b></div>`; }).join("") : `<p style="color:var(--muted)">Coșul e gol. Adaugă un produs care îți place.</p>`;
   $("#toCheckout").disabled = !ids.length; $("#toCheckout").style.opacity = ids.length ? 1 : .5;
   return {ids,total};

@@ -2,11 +2,12 @@ import { loadProducts } from "./_lib.js";
 
 // GET /feed.xml – lista de produse în formatul Google Shopping (acceptat și de Biano și Compari.ro)
 const esc = s => String(s ?? "").replace(/[<>&'"]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c]));
-const CAT_NAMES = { tablouri: "Tablouri pictate", globuri: "Globuri pictate", decoratiuni: "Decorațiuni & artizanat", gablonturi: "Gablonturi" };
+const CAT_NAMES = { tablouri: "Tablouri pictate", globuri: "Crăciun – globuri și decorațiuni", decoratiuni: "Decorațiuni & artizanat", gablonturi: "Gablonturi", martisoare: "Mărțișoare" };
 
 export async function onRequestGet({ request, env }) {
   const origin = new URL(request.url).origin;
-  const list = env.SHOP ? (await loadProducts(env)).filter(p => !p.hidden) : [];
+  let list = [];
+  try { list = (await loadProducts(env)).filter(p => !p.hidden); } catch {}
   const items = list.map(p => `
   <item>
     <g:id>${esc(p.id)}</g:id>
