@@ -252,7 +252,8 @@ $("#logout").onclick = logout;
 
 async function start(){
   $("#loginView").style.display = "none"; $("#appView").style.display = "block";
-  await load(); showList();
+  await load();
+  if (impItems.length) { $("#listView").style.display="none"; $("#impView").style.display="block"; impSummary(); } else showList();
 }
 async function load(){
   try { products = await api("/api/products"); renderList(); }
@@ -466,6 +467,19 @@ $("#impStart").onclick = async () => {
 };
 $("#impStop").onclick = () => { impStop = true; $("#impStat").textContent = "Se oprește după produsul curent…"; };
 window.addEventListener("beforeunload", e => { if (impRunning) { e.preventDefault(); e.returnValue = ""; } });
+
+// Primește produsele trimise direct din contul eMAG Marketplace (fereastra eMAG deschide panoul și trimite datele)
+window.addEventListener("message", async e => {
+  if (e.origin !== "https://marketplace.emag.ro" || !e.data || e.data.type !== "artdeco-import") return;
+  const items = (Array.isArray(e.data.items) ? e.data.items : []).filter(i => i && i.importId && i.name && i.price > 0);
+  if (!items.length) return;
+  impItems = items;
+  if (e.source) try { e.source.postMessage({ type: "artdeco-import-received", count: items.length }, e.origin); } catch(_) {}
+  if (!KEY) { toast(`Am primit ${items.length} produse din eMAG. Intră cu parola ca să continui.`); return; }
+  $("#listView").style.display="none"; $("#formView").style.display="none"; $("#impView").style.display="block";
+  await load(); impSummary(); toast(`Am primit ${items.length} produse din eMAG`);
+});
+if (window.opener) try { window.opener.postMessage({ type: "artdeco-admin-ready" }, "https://marketplace.emag.ro"); } catch(_) {}
 
 if (KEY) {
   fetch("/api/login", { method:"POST", headers:{ "x-admin-key": KEY } }).then(r => r.ok ? start() : logout()).catch(logout);
