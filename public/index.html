@@ -304,7 +304,7 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
         <div class="cgrid">
           <a class="ccard" href="tel:+40763605252"><span class="ci">📞</span><b>Telefon</b><span>0763 605 252</span><small>Comenzi și informații</small></a>
           <a class="ccard" id="waContact2" href="#" target="_blank" rel="noopener"><span class="ci">💬</span><b>WhatsApp</b><span>0763 605 252</span><small>Scrie-ne oricând</small></a>
-          <div class="ccard"><span class="ci">✉️</span><b>Email</b><span class="todo">de completat</span><small>Răspundem în 24 de ore</small></div>
+          <a class="ccard" href="mailto:contact@art-deco.ro"><span class="ci">✉️</span><b>Email</b><span>contact@art-deco.ro</span><small>Răspundem în 24 de ore</small></a>
           <div class="ccard"><span class="ci">📍</span><b>Atelier</b><span>Târgoviște, Dâmbovița</span><small>Livrăm în toată țara</small></div>
         </div>
         <div class="box" style="margin-top:22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
@@ -629,7 +629,7 @@ const LEGAL = {
   retur:() => `<h2>Retur și rambursare</h2>
     <h3>Dreptul de retragere</h3><p>Conform OUG nr. 34/2014, ai dreptul să te retragi din contract în termen de <b>14 zile calendaristice</b> de la primirea produsului, fără să fie nevoie să motivezi decizia.</p>
     <h3>Cum returnezi un produs</h3><ul>
-      <li>Ne anunți în termenul de 14 zile, telefonic sau pe WhatsApp la <b>${PHONE_TXT}</b> ori prin email, cu numele, numărul comenzii și produsul returnat.</li>
+      <li>Ne anunți în termenul de 14 zile, telefonic sau pe WhatsApp la <b>${PHONE_TXT}</b> ori prin email la <b>contact@art-deco.ro</b>, cu numele, numărul comenzii și produsul returnat.</li>
       <li>Trimiți produsul în cel mult 14 zile de la anunțare, în starea în care l-ai primit, nefolosit și nedeteriorat, de preferat în ambalajul original.</li>
       <li>Costul transportului pentru retur este suportat de client.</li></ul>
     <h3>Rambursarea banilor</h3><ul>
@@ -640,7 +640,7 @@ const LEGAL = {
     <h3>Produse deteriorate la transport</h3><p>Dacă produsul ajunge deteriorat, fă poze coletului și produsului și anunță-ne în 48 de ore. Îl înlocuim sau îți returnăm banii, fără costuri pentru tine.</p>
     <p>Pentru orice nemulțumire ne poți contacta direct; poți apela și la ANPC (anpc.ro) sau la platforma europeană SOL.</p>`,
   termeni:() => `<h2>Termeni și condiții</h2>
-    <h3>1. Vânzătorul</h3><p>Site-ul ArtDeco este administrat de <b>Burlacov-Iordache A. Constantin Întreprindere Familială</b>, cu sediul în Târgoviște, Str. Al. Ioan Cuza nr. 2, bl. 2, sc. A, jud. Dâmbovița, CUI 19732210, Nr. Reg. Com. F15/564/01.07.2002, neplătitoare de TVA. Telefon: ${PHONE_TXT}.</p>
+    <h3>1. Vânzătorul</h3><p>Site-ul ArtDeco este administrat de <b>Burlacov-Iordache A. Constantin Întreprindere Familială</b>, cu sediul în Târgoviște, Str. Al. Ioan Cuza nr. 2, bl. 2, sc. A, jud. Dâmbovița, CUI 19732210, Nr. Reg. Com. F15/564/01.07.2002, neplătitoare de TVA. Telefon: ${PHONE_TXT}, email: contact@art-deco.ro.</p>
     <h3>2. Produsele</h3><p>Produsele sunt realizate manual. Fotografiile prezintă produsul real, dar culorile pot diferi ușor în funcție de ecran, iar piesele lucrate manual pot avea mici variații. Produsele marcate „la comandă” se realizează după primirea comenzii și pot fi foarte asemănătoare, dar nu identice, cu cele din fotografii.</p>
     <h3>3. Prețuri</h3><p>Prețurile sunt afișate în lei și sunt prețuri finale pentru produse. Firma nu este plătitoare de TVA, așa că prețurile nu conțin TVA. Costul livrării se adaugă separat și este afișat înainte de trimiterea comenzii. Valoarea minimă a unei comenzi este ${lei(SET.minOrder)}.</p>
     <h3>4. Comanda</h3><p>Comanda se trimite din coșul de cumpărături, prin WhatsApp sau telefonic. Contractul se încheie în momentul în care confirmăm comanda telefonic sau în scris. Ne rezervăm dreptul de a refuza o comandă dacă produsul nu mai este disponibil sau datele de livrare sunt incomplete; în acest caz te anunțăm imediat.</p>
@@ -650,12 +650,12 @@ const LEGAL = {
     <h3>8. Proprietate intelectuală</h3><p>Lucrările, fotografiile și textele de pe site aparțin ArtDeco și nu pot fi copiate sau folosite în scop comercial fără acordul nostru scris.</p>
     <h3>9. Litigii</h3><p>Orice neînțelegere încercăm să o rezolvăm amiabil. Ca și consumator, te poți adresa Autorității Naționale pentru Protecția Consumatorilor (anpc.ro) sau platformei europene de soluționare online a litigiilor (SOL).</p>`,
   gdpr:() => `<h2>Politica de confidențialitate</h2>
-    <h3>Cine prelucrează datele</h3><p><b>Burlacov-Iordache A. Constantin Întreprindere Familială</b>, CUI 19732210, Str. Al. Ioan Cuza nr. 2, bl. 2, sc. A, Târgoviște, jud. Dâmbovița, telefon ${PHONE_TXT}.</p>
+    <h3>Cine prelucrează datele</h3><p><b>Burlacov-Iordache A. Constantin Întreprindere Familială</b>, CUI 19732210, Str. Al. Ioan Cuza nr. 2, bl. 2, sc. A, Târgoviște, jud. Dâmbovița, telefon ${PHONE_TXT}, email contact@art-deco.ro.</p>
     <h3>Ce date colectăm</h3><p>Numele, numărul de telefon, adresa de livrare și, dacă ni-l dai, adresa de email. Le primim doar când ne trimiți o comandă sau un mesaj.</p>
     <h3>De ce le folosim</h3><ul><li>ca să confirmăm, să facturăm și să livrăm comanda (executarea contractului);</li><li>ca să îndeplinim obligațiile legale de contabilitate (păstrarea facturilor);</li><li>ca să îți răspundem la întrebări.</li></ul><p>Nu trimitem reclame și nu vindem datele nimănui.</p>
     <h3>Cui le transmitem</h3><p>Doar firmei de curierat care livrează coletul și, pentru facturare, programului de contabilitate. Comanda se trimite prin WhatsApp, deci se aplică și politica de confidențialitate a WhatsApp.</p>
     <h3>Cât timp le păstrăm</h3><p>Datele din facturi le păstrăm cât cere legea contabilității. Celelalte date le ștergem după finalizarea comenzii sau la cererea ta.</p>
-    <h3>Drepturile tale</h3><p>Ai dreptul să ceri accesul la date, corectarea sau ștergerea lor, restricționarea prelucrării și să te opui prelucrării. Pentru orice cerere, contactează-ne la ${PHONE_TXT}. Te poți adresa și Autorității Naționale de Supraveghere a Prelucrării Datelor cu Caracter Personal (dataprotection.ro).</p>
+    <h3>Drepturile tale</h3><p>Ai dreptul să ceri accesul la date, corectarea sau ștergerea lor, restricționarea prelucrării și să te opui prelucrării. Pentru orice cerere, scrie-ne la contact@art-deco.ro sau sună la ${PHONE_TXT}. Te poți adresa și Autorității Naționale de Supraveghere a Prelucrării Datelor cu Caracter Personal (dataprotection.ro).</p>
     <h3>Cookie-uri</h3><p>Site-ul nu folosește cookie-uri de reclamă sau de urmărire. Coșul și lista de favorite sunt salvate doar în browserul tău.</p>`
 };
 function openLegal(k){ closeAll(); const d = LEGAL[k]; $("#mbox").innerHTML=`<button class="x" data-close>×</button><div class="legal" style="padding:30px;max-width:760px">${typeof d === "function" ? d() : d}</div>`; $("#modal").classList.add("on"); $("#ov").classList.add("on"); }
