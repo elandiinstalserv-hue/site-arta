@@ -33,7 +33,8 @@ header{position:sticky;top:0;z-index:30;background:#fff;box-shadow:0 1px 0 var(-
 .search svg{position:absolute;left:17px;top:50%;transform:translateY(-50%)}
 .hicons{margin-left:auto;display:flex;align-items:center;gap:6px}
 .hlink{font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;padding:8px 10px}
-.hlink:hover{color:var(--blue)}
+.hlink:hover,.hlink.on{color:var(--blue)}
+.hlink.on{box-shadow:inset 0 -2px 0 var(--blue)}
 .ibtn{position:relative;border:0;background:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
 .ibtn:hover{background:var(--bg)}
 .ibtn .n{position:absolute;top:2px;right:0;background:var(--terra);color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:999px;display:grid;place-items:center;padding:0 4px}
@@ -104,7 +105,7 @@ h1{font-size:32px;margin:0;font-weight:800;letter-spacing:-.4px}
 .usp{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:56px 0 0}
 .usp div{background:var(--bg);border-radius:14px;padding:18px;font-size:14px;color:var(--muted)}
 .usp b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
-section{padding:56px 0;scroll-margin-top:140px}
+section{padding:40px 0 56px}
 h2{font-size:28px;margin:0 0 10px;font-weight:800}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center}
 .box{background:var(--bg);border-radius:18px;padding:30px}
@@ -112,6 +113,14 @@ h2{font-size:28px;margin:0 0 10px;font-weight:800}
 .btn:hover{background:var(--blue-d)}
 .btn.ghost{background:transparent;color:var(--blue);border:2px solid var(--blue)}
 .btn.green{background:var(--green)}
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.ccard{background:var(--bg);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink);transition:.15s}
+a.ccard:hover{box-shadow:0 8px 24px rgba(0,0,0,.08);transform:translateY(-2px)}
+.ccard .ci{font-size:26px;margin-bottom:6px}
+.ccard small{color:var(--muted)}
+.about-text #aboutText p{font-size:16px;line-height:1.7}
+@media (max-width:760px){.cgrid{grid-template-columns:1fr 1fr}}
+@media (max-width:440px){.cgrid{grid-template-columns:1fr}}
 .todo{background:#FFF4C2;color:#6b5600;border-radius:4px;padding:0 4px}
 
 footer{background:#1f1f22;color:#cfcfd4;padding:44px 0 24px;margin-top:20px}
@@ -208,8 +217,9 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
       <input id="q" type="search" placeholder="Caută tablouri, globuri, gablonturi…" aria-label="Caută produse">
     </div>
     <div class="hicons">
-      <a class="hlink" href="#despre">Despre noi</a>
-      <a class="hlink" href="#contact">Contact</a>
+      <a class="hlink" href="#produse" data-nav="produse">Produse</a>
+      <a class="hlink" href="#despre" data-nav="despre">Despre noi</a>
+      <a class="hlink" href="#contact" data-nav="contact">Contact</a>
       <button class="ibtn" id="favBtn" aria-label="Favorite"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1f1f22" stroke-width="2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="n" id="favN"></span></button>
       <button class="ibtn" id="cartBtn" aria-label="Coș"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1f1f22" stroke-width="2" stroke-linejoin="round"><path d="M5 7h14l-1.5 12h-11z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="n" id="cartN"></span></button>
     </div>
@@ -221,6 +231,7 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
 </header>
 
 <main id="top">
+ <div class="view" id="view-produse">
   <div class="phead">
     <div class="wrap">
       <div class="crumbs" id="crumbs"></div>
@@ -241,26 +252,42 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
       <div><b>Retur în 14 zile</b>Conform legislației în vigoare</div>
     </div>
   </div>
+ </div>
 
-  <section id="despre">
-    <div class="wrap two-col">
-      <div>
-        <span class="script">Povestea noastră</span>
-        <h2 id="aboutTitle">Artă făcută cu mâna, în Târgoviște</h2>
-        <div id="aboutText"><p>ArtDeco a pornit din pasiunea pentru pictură și lucrul manual. Pictăm tablouri în ulei, decorăm globuri și obiecte cu culori acrilice și creăm gablonturi și obiecte de artizanat, fiecare cu răbdare și atenție la detalii.</p>
-        <p>Nu lucrăm în serie. Fiecare produs e realizat manual, de aceea poate avea mici diferențe față de fotografie. Asta e farmecul unui obiect făcut de mână.</p></div>
+  <div class="view" id="view-despre" hidden>
+    <div class="phead"><div class="wrap"><div class="crumbs"><a href="#produse">ArtDeco</a> › Despre noi</div><div class="ptitle"><h1>Despre noi</h1><span class="script">povestea noastră</span></div></div></div>
+    <section>
+      <div class="wrap two-col" style="align-items:start">
+        <div class="about-text">
+          <h2 id="aboutTitle">Artă făcută cu mâna, în Târgoviște</h2>
+          <div id="aboutText"><p>ArtDeco a pornit din pasiunea pentru pictură și lucrul manual. Pictăm tablouri în ulei, decorăm globuri și obiecte cu culori acrilice și creăm gablonturi și obiecte de artizanat, fiecare cu răbdare și atenție la detalii.</p>
+          <p>Nu lucrăm în serie. Fiecare produs e realizat manual, de aceea poate avea mici diferențe față de fotografie. Asta e farmecul unui obiect făcut de mână.</p></div>
+        </div>
+        <div style="display:grid;gap:16px">
+          <div class="box">
+            <h3 style="margin-top:0;color:var(--blue)">Lucrări la comandă</h3>
+            <p style="color:var(--muted)">Vrei un tablou cu casa ta, un glob personalizat cu numele familiei sau un cadou unic? Spune-ne ideea ta și îți facem o ofertă.</p>
+            <a class="btn green" id="waContact" href="#" target="_blank" rel="noopener">Scrie-ne pe WhatsApp</a>
+          </div>
+          <div class="box">
+            <h3 style="margin-top:0;color:var(--blue)">De ce ArtDeco?</h3>
+            <ul style="color:var(--muted);padding-left:18px;margin:0">
+              <li>Lucrări originale, pictate și lucrate manual</li>
+              <li>Fiecare piesă e unicat</li>
+              <li>Materiale de calitate, create în România</li>
+              <li>Ambalare atentă și livrare în toată țara</li>
+            </ul>
+            <a class="btn ghost" href="#produse" style="margin-top:16px">Vezi produsele</a>
+          </div>
+        </div>
       </div>
-      <div class="box">
-        <h3 style="margin-top:0;color:var(--blue)">Lucrări la comandă</h3>
-        <p style="color:var(--muted)">Vrei un tablou cu casa ta, un glob personalizat cu numele familiei sau un cadou unic? Spune-ne ideea ta și îți facem o ofertă.</p>
-        <a class="btn green" id="waContact" href="#" target="_blank" rel="noopener">Scrie-ne pe WhatsApp</a>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
-  <section id="livrare" style="background:var(--bg)">
+  <div class="view" id="view-livrare" hidden>
+    <div class="phead"><div class="wrap"><div class="crumbs"><a href="#produse">ArtDeco</a> › Livrare și retur</div><div class="ptitle"><h1>Livrare, plată și retur</h1></div></div></div>
+  <section>
     <div class="wrap">
-      <h2>Livrare, plată și retur</h2>
       <div class="two-col" style="align-items:start;grid-template-columns:repeat(3,1fr)">
         <div><h3 style="color:var(--blue);margin-bottom:6px">Livrare</h3><p style="color:var(--muted);margin:0">Expediem prin curier în toată România, în 1–3 zile lucrătoare de la confirmarea comenzii. Comanda minimă: <b class="js-min">100 lei</b>. Livrare cu plata ramburs: <b class="js-cod">25 lei</b>. <a href="#" data-legal="livrare">Detalii</a></p></div>
         <div><h3 style="color:var(--blue);margin-bottom:6px">Plată</h3><p style="color:var(--muted);margin:0">Plătești ramburs, la curier, sau prin transfer bancar. După ce trimiți comanda, te sunăm să o confirmăm.</p></div>
@@ -268,18 +295,25 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
       </div>
     </div>
   </section>
+  </div>
 
-  <section id="contact">
-    <div class="wrap two-col">
-      <div>
-        <h2>Contact</h2>
-        <p><b>Telefon / WhatsApp:</b> <a href="tel:+40763605252">0763 605 252</a></p>
-        <p><b>Email:</b> <span class="todo">de completat</span></p>
-        <p><b>Adresă:</b> Târgoviște, Dâmbovița</p>
+  <div class="view" id="view-contact" hidden>
+    <div class="phead"><div class="wrap"><div class="crumbs"><a href="#produse">ArtDeco</a> › Contact</div><div class="ptitle"><h1>Contact</h1><span class="script">ne auzim curând</span></div></div></div>
+    <section>
+      <div class="wrap">
+        <div class="cgrid">
+          <a class="ccard" href="tel:+40763605252"><span class="ci">📞</span><b>Telefon</b><span>0763 605 252</span><small>Comenzi și informații</small></a>
+          <a class="ccard" id="waContact2" href="#" target="_blank" rel="noopener"><span class="ci">💬</span><b>WhatsApp</b><span>0763 605 252</span><small>Scrie-ne oricând</small></a>
+          <div class="ccard"><span class="ci">✉️</span><b>Email</b><span class="todo">de completat</span><small>Răspundem în 24 de ore</small></div>
+          <div class="ccard"><span class="ci">📍</span><b>Atelier</b><span>Târgoviște, Dâmbovița</span><small>Livrăm în toată țara</small></div>
+        </div>
+        <div class="box" style="margin-top:22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+          <p style="margin:0;color:var(--muted);flex:1;min-width:240px">Răspundem la mesaje de luni până vineri, iar comenzile plasate în weekend le confirmăm luni dimineață. Pentru lucrări la comandă, trimite-ne pe WhatsApp o fotografie sau o descriere a ideii tale.</p>
+          <a class="btn" href="#livrare">Livrare, plată și retur</a>
+        </div>
       </div>
-      <div class="box"><p style="margin:0;color:var(--muted)">Răspundem la mesaje de luni până vineri, iar comenzile plasate în weekend le confirmăm luni dimineață.</p></div>
-    </div>
-  </section>
+    </section>
+  </div>
 </main>
 
 <footer>
@@ -297,6 +331,7 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
         <a href="#" data-legal="retur">Retur și rambursare</a>
         <a href="#" data-legal="termeni">Termeni și condiții</a>
         <a href="#" data-legal="gdpr">Politica de confidențialitate</a>
+        <a href="#despre">Despre noi</a>
         <a href="#contact">Contact</a>
       </div>
       <div class="anpc">
@@ -423,7 +458,7 @@ function renderNav(){
   $("#qcats").innerHTML = all.map(c=>`<button class="qcat ${state.cat===c.id&&!state.onlyFav?"on":""}" data-cat="${c.id}">${c.icon} ${c.name}</button>`).join("") +
     `<button class="qcat" data-go="despre">🎨 Lucrări la comandă</button>`;
   $("#menuList").innerHTML = all.map(c=>`<button class="mlink" data-cat="${c.id}">${c.icon} ${c.name}</button>`).join("") +
-    `<button class="mlink" data-go="despre">🎨 Lucrări la comandă</button><button class="mlink" data-go="livrare">🚚 Livrare și retur</button><button class="mlink" data-go="contact">📞 Contact</button>`;
+    `<button class="mlink" data-go="despre">ℹ️ Despre noi</button><button class="mlink" data-go="despre">🎨 Lucrări la comandă</button><button class="mlink" data-go="livrare">🚚 Livrare și retur</button><button class="mlink" data-go="contact">📞 Contact</button>`;
   $("#fcats").innerHTML = CATS.map(c=>`<a href="#" data-cat="${c.id}">${c.name}</a>`).join("");
 }
 function renderHead(){
@@ -475,14 +510,14 @@ function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"
 function closePops(except){ document.querySelectorAll(".pop.on").forEach(p=>{ if(p!==except) p.classList.remove("on"); }); }
 function closeAll(){ ["#menuDrawer","#cartDrawer","#modal","#ov"].forEach(s=>$(s).classList.remove("on")); if (location.hash.startsWith("#produs-")) { try { history.replaceState(null, "", location.pathname); } catch(e) {} } }
 function openPanel(sel){ closeAll(); $(sel).classList.add("on"); $("#ov").classList.add("on"); }
-function goCat(id){ state.cat=id; state.onlyFav=false; state.f={disp:[],pret:[],dim:[],material:[],tehnica:[]}; closeAll(); render(); $("#top").scrollIntoView({behavior:"smooth"}); }
+function goCat(id){ state.cat=id; state.onlyFav=false; state.f={disp:[],pret:[],dim:[],material:[],tehnica:[]}; closeAll(); if (currentView() !== "produse") { location.hash = "produse"; } render(); window.scrollTo({top:0, behavior:"smooth"}); }
 
 document.addEventListener("click", e => {
   const t = e.target;
   const fav = t.closest("[data-fav]"); if (fav){ e.stopPropagation(); const id=fav.dataset.fav; favs = favs.includes(id) ? favs.filter(x=>x!==id) : [...favs,id]; store.set("artdeco-favs",favs); toast(favs.includes(id)?"Adăugat la favorite ♥":"Scos din favorite"); render(); return; }
   const add = t.closest("[data-add]"); if (add){ e.stopPropagation(); cart[add.dataset.add]=(cart[add.dataset.add]||0)+1; store.set("artdeco-cart",cart); renderCounts(); renderCart(); toast("Adăugat în coș ✓"); return; }
   const cat = t.closest("[data-cat]"); if (cat){ e.preventDefault(); goCat(cat.dataset.cat); return; }
-  const go = t.closest("[data-go]"); if (go){ closeAll(); document.getElementById(go.dataset.go).scrollIntoView({behavior:"smooth"}); return; }
+  const go = t.closest("[data-go]"); if (go){ closeAll(); location.hash = go.dataset.go; return; }
   const pill = t.closest("[data-pill]"); if (pill){ const pop=$("#pop-"+pill.dataset.pill); closePops(pop); pop.classList.toggle("on"); return; }
   const srt = t.closest("[data-sort]"); if (srt){ state.sort=srt.dataset.sort; renderGrid(); return; }
   const lg = t.closest("[data-legal]"); if (lg){ e.preventDefault(); openLegal(lg.dataset.legal); return; }
@@ -505,7 +540,7 @@ $("#fbar").addEventListener("click", e => {
 $("#q").addEventListener("input", e => { state.q = e.target.value; renderHead(); renderFilters(); renderGrid(); });
 $("#menuBtn").onclick = () => openPanel("#menuDrawer");
 $("#cartBtn").onclick = () => { renderCart(); openPanel("#cartDrawer"); };
-$("#favBtn").onclick = () => { state.onlyFav = !state.onlyFav; state.cat="toate"; render(); $("#top").scrollIntoView({behavior:"smooth"}); };
+$("#favBtn").onclick = () => { state.onlyFav = !state.onlyFav; state.cat="toate"; if (currentView() !== "produse") location.hash = "produse"; render(); window.scrollTo({top:0, behavior:"smooth"}); };
 
 function openProduct(id){
   const p = byId(id);
@@ -609,9 +644,20 @@ const LEGAL = {
 };
 function openLegal(k){ closeAll(); const d = LEGAL[k]; $("#mbox").innerHTML=`<button class="x" data-close>×</button><div class="legal" style="padding:30px;max-width:760px">${typeof d === "function" ? d() : d}</div>`; $("#modal").classList.add("on"); $("#ov").classList.add("on"); }
 
+$("#waContact2").href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Bună ziua! Am o întrebare pentru ArtDeco.")}`;
 $("#waContact").href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Bună ziua! Aș dori o lucrare la comandă de la ArtDeco.")}`;
 $("#yr").textContent = new Date().getFullYear();
 render(); renderCart();
+const VIEWS = ["produse","despre","contact","livrare"];
+function currentView(){ const h = location.hash.slice(1); return VIEWS.includes(h) ? h : "produse"; }
+function route(){
+  const v = currentView();
+  VIEWS.forEach(n => { const el = document.getElementById("view-" + n); if (el) el.hidden = n !== v; });
+  document.querySelectorAll("[data-nav]").forEach(a => a.classList.toggle("on", a.dataset.nav === v));
+  document.title = v === "produse" ? "ArtDeco – Artă și artizanat" : `${{despre:"Despre noi",contact:"Contact",livrare:"Livrare, plată și retur"}[v]} – ArtDeco`;
+  if (!location.hash.startsWith("#produs-")) window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route); route();
 function openFromHash(){ const m = location.hash.match(/^#produs-(.+)$/); if (m && byId(m[1])) openProduct(m[1]); }
 window.addEventListener("hashchange", openFromHash);
 function applySettings(){
