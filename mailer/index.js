@@ -1,4 +1,5 @@
-// Worker „artdeco-mailer”: trimite pe email comenzile primite în magazin.
+// Worker „artdeco-mailer”: trimite pe email comenzile primite în magazin
+// și redirecționează emailurile primite la contact@art-deco.ro către toate adresele.
 // Este apelat de site (Pages) prin legătura de serviciu „MAILER”, nu e accesibil public.
 // Expeditor: comenzi@art-deco.ro (domeniul are Email Routing activ în Cloudflare).
 // Destinatari: adresele confirmate în Email Routing (vezi wrangler.toml).
@@ -29,11 +30,19 @@ function mime({ to, subject, text, replyTo }) {
   return headers.join("\r\n") + "\r\n\r\n" + b64(text);
 }
 
+const RCPT = env => String(env.ORDER_RECIPIENTS || "").split(",").map(s => s.trim()).filter(Boolean);
+
 export default {
+  // emailurile primite la contact@art-deco.ro sunt trimise mai departe la toate adresele
+  async email(message, env) {
+    for (const addr of RCPT(env)) {
+      try { await message.forward(addr); } catch (e) { console.log("forward", addr, String(e)); }
+    }
+  },
   async fetch(request, env) {
     if (request.method !== "POST") return new Response("Not found", { status: 404 });
     const { subject, text, replyTo } = await request.json();
-    const to = String(env.ORDER_RECIPIENTS || "").split(",").map(s => s.trim()).filter(Boolean);
+    const to = RCPT(env);
     const results = [];
     for (const addr of to) {
       try {
