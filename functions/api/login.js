@@ -1,4 +1,5 @@
 import { json, db, isAdmin, denied } from "../_lib.js";
+import { previewToken, previewCookie } from "../_middleware.js";
 
 // POST /api/login – verifică parola (trimisă în antetul x-admin-key)
 export async function onRequestPost({ request, env }) {
@@ -8,5 +9,6 @@ export async function onRequestPost({ request, env }) {
     await new Promise(r => setTimeout(r, 800)); // încetinește încercările repetate
     return denied();
   }
-  return json({ ok: true });
+  // după autentificare poți vedea și magazinul cât timp e „în pregătire”
+  return json({ ok: true }, 200, { "set-cookie": previewCookie(await previewToken(env)) });
 }
