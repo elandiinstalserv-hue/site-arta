@@ -322,7 +322,7 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
       <div>
         <h4>ArtDeco – Artă și artizanat</h4>
         <p style="font-size:14px">Tablouri, decorațiuni și gablonturi lucrate manual, în Târgoviște.</p>
-        <p style="font-size:13px"><span class="todo">Denumire firmă · CUI · Nr. Reg. Com. – de completat</span></p>
+        <p style="font-size:13px;line-height:1.6">Burlacov-Iordache A. Constantin Întreprindere Familială<br>CUI 19732210 · Nr. Reg. Com. F15/564/01.07.2002<br>Str. Ana Ipătescu nr. 22A, Târgoviște, jud. Dâmbovița</p>
       </div>
       <div><h4>Categorii</h4><div id="fcats"></div></div>
       <div>
@@ -639,8 +639,24 @@ const LEGAL = {
     <h3>Excepții</h3><p>Dreptul de retragere nu se aplică produselor realizate după specificațiile tale sau personalizate în mod clar (de exemplu un tablou după o fotografie trimisă de tine sau un glob cu numele familiei).</p>
     <h3>Produse deteriorate la transport</h3><p>Dacă produsul ajunge deteriorat, fă poze coletului și produsului și anunță-ne în 48 de ore. Îl înlocuim sau îți returnăm banii, fără costuri pentru tine.</p>
     <p>Pentru orice nemulțumire ne poți contacta direct; poți apela și la ANPC (anpc.ro) sau la platforma europeană SOL.</p>`,
-  termeni:`<h2>Termeni și condiții</h2><p><span class="todo">Text de completat cu datele firmei.</span> Aici vor fi: datele vânzătorului (denumire, CUI, adresă), modul de plasare și confirmare a comenzii, prețuri și plată, livrare, dreptul de retragere în 14 zile, garanția și soluționarea litigiilor (ANPC, SAL, SOL).</p>`,
-  gdpr:`<h2>Politica de confidențialitate</h2><p><span class="todo">Text de completat cu datele firmei.</span> Folosim datele tale (nume, telefon, adresă, email) doar pentru a procesa și livra comanda. Nu le vindem și nu le dăm altor firme, cu excepția curierului care livrează coletul. Poți cere oricând ștergerea datelor.</p>`
+  termeni:() => `<h2>Termeni și condiții</h2>
+    <h3>1. Vânzătorul</h3><p>Site-ul ArtDeco este administrat de <b>Burlacov-Iordache A. Constantin Întreprindere Familială</b>, cu sediul în Târgoviște, Str. Ana Ipătescu nr. 22A, jud. Dâmbovița, CUI 19732210, Nr. Reg. Com. F15/564/01.07.2002. Telefon: ${PHONE_TXT}.</p>
+    <h3>2. Produsele</h3><p>Produsele sunt realizate manual. Fotografiile prezintă produsul real, dar culorile pot diferi ușor în funcție de ecran, iar piesele lucrate manual pot avea mici variații. Produsele marcate „la comandă” se realizează după primirea comenzii și pot fi foarte asemănătoare, dar nu identice, cu cele din fotografii.</p>
+    <h3>3. Prețuri</h3><p>Prețurile sunt afișate în lei și sunt prețuri finale pentru produse. Costul livrării se adaugă separat și este afișat înainte de trimiterea comenzii. Valoarea minimă a unei comenzi este ${lei(SET.minOrder)}.</p>
+    <h3>4. Comanda</h3><p>Comanda se trimite din coșul de cumpărături, prin WhatsApp sau telefonic. Contractul se încheie în momentul în care confirmăm comanda telefonic sau în scris. Ne rezervăm dreptul de a refuza o comandă dacă produsul nu mai este disponibil sau datele de livrare sunt incomplete; în acest caz te anunțăm imediat.</p>
+    <h3>5. Plata și livrarea</h3><p>Plata se face ramburs, la curier, sau prin transfer bancar. Detaliile despre costuri și termene sunt în pagina <a href="#" data-legal="livrare">Livrare și plată</a>.</p>
+    <h3>6. Dreptul de retragere</h3><p>Ai dreptul să returnezi produsele în 14 zile de la primire, conform OUG nr. 34/2014. Condițiile sunt descrise în pagina <a href="#" data-legal="retur">Retur și rambursare</a>.</p>
+    <h3>7. Garanție și conformitate</h3><p>Răspundem pentru conformitatea produselor conform legislației în vigoare. Dacă un produs nu corespunde descrierii sau a ajuns deteriorat, contactează-ne și găsim împreună soluția: înlocuire, reparare sau returnarea banilor.</p>
+    <h3>8. Proprietate intelectuală</h3><p>Lucrările, fotografiile și textele de pe site aparțin ArtDeco și nu pot fi copiate sau folosite în scop comercial fără acordul nostru scris.</p>
+    <h3>9. Litigii</h3><p>Orice neînțelegere încercăm să o rezolvăm amiabil. Ca și consumator, te poți adresa Autorității Naționale pentru Protecția Consumatorilor (anpc.ro) sau platformei europene de soluționare online a litigiilor (SOL).</p>`,
+  gdpr:() => `<h2>Politica de confidențialitate</h2>
+    <h3>Cine prelucrează datele</h3><p><b>Burlacov-Iordache A. Constantin Întreprindere Familială</b>, CUI 19732210, Str. Ana Ipătescu nr. 22A, Târgoviște, jud. Dâmbovița, telefon ${PHONE_TXT}.</p>
+    <h3>Ce date colectăm</h3><p>Numele, numărul de telefon, adresa de livrare și, dacă ni-l dai, adresa de email. Le primim doar când ne trimiți o comandă sau un mesaj.</p>
+    <h3>De ce le folosim</h3><ul><li>ca să confirmăm, să facturăm și să livrăm comanda (executarea contractului);</li><li>ca să îndeplinim obligațiile legale de contabilitate (păstrarea facturilor);</li><li>ca să îți răspundem la întrebări.</li></ul><p>Nu trimitem reclame și nu vindem datele nimănui.</p>
+    <h3>Cui le transmitem</h3><p>Doar firmei de curierat care livrează coletul și, pentru facturare, programului de contabilitate. Comanda se trimite prin WhatsApp, deci se aplică și politica de confidențialitate a WhatsApp.</p>
+    <h3>Cât timp le păstrăm</h3><p>Datele din facturi le păstrăm cât cere legea contabilității. Celelalte date le ștergem după finalizarea comenzii sau la cererea ta.</p>
+    <h3>Drepturile tale</h3><p>Ai dreptul să ceri accesul la date, corectarea sau ștergerea lor, restricționarea prelucrării și să te opui prelucrării. Pentru orice cerere, contactează-ne la ${PHONE_TXT}. Te poți adresa și Autorității Naționale de Supraveghere a Prelucrării Datelor cu Caracter Personal (dataprotection.ro).</p>
+    <h3>Cookie-uri</h3><p>Site-ul nu folosește cookie-uri de reclamă sau de urmărire. Coșul și lista de favorite sunt salvate doar în browserul tău.</p>`
 };
 function openLegal(k){ closeAll(); const d = LEGAL[k]; $("#mbox").innerHTML=`<button class="x" data-close>×</button><div class="legal" style="padding:30px;max-width:760px">${typeof d === "function" ? d() : d}</div>`; $("#modal").classList.add("on"); $("#ov").classList.add("on"); }
 
