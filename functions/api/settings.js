@@ -2,7 +2,7 @@ import { json, fail, db, isAdmin, denied } from "../_lib.js";
 
 // Textele editabile ale magazinului (deocamdată pagina „Despre noi”)
 const DEFAULTS = {
-  aboutTitle: "Artă făcută cu mâna, în Târgoviște",
+  aboutTitle: "Artă din suflet, lucrată manual, la Târgoviște",
   minOrder: 100,          // valoarea minimă a comenzii (lei)
   codFee: 25,             // cost livrare cu plata ramburs (lei)
   transferShip: "",       // cost livrare cu plata prin transfer (lei); gol = se comunică la confirmare

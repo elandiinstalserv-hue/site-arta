@@ -259,7 +259,7 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
     <section>
       <div class="wrap two-col" style="align-items:start">
         <div class="about-text">
-          <h2 id="aboutTitle">Artă făcută cu mâna, în Târgoviște</h2>
+          <h2 id="aboutTitle">Artă din suflet, lucrată manual, la Târgoviște</h2>
           <div id="aboutText"><p>ArtDeco a pornit din pasiunea pentru pictură și lucrul manual. Pictăm tablouri în ulei, decorăm globuri și obiecte cu culori acrilice și creăm gablonturi și obiecte de artizanat, fiecare cu răbdare și atenție la detalii.</p>
           <p>Nu lucrăm în serie. Fiecare produs e realizat manual, de aceea poate avea mici diferențe față de fotografie. Asta e farmecul unui obiect făcut de mână.</p></div>
         </div>
@@ -322,7 +322,7 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
       <div>
         <h4>ArtDeco – Artă și artizanat</h4>
         <p style="font-size:14px">Tablouri, decorațiuni și gablonturi lucrate manual, în Târgoviște.</p>
-        <p style="font-size:13px;line-height:1.6">Burlacov-Iordache A. Constantin Întreprindere Familială<br>CUI 19732210 · Nr. Reg. Com. F15/564/01.07.2002 · EUID ROONRC.F15/564/2002<br>Str. Al. Ioan Cuza nr. 2, bl. 2, sc. A, Târgoviște, jud. Dâmbovița</p>
+        <p style="font-size:13px;line-height:1.6">Burlacov-Iordache A. Constantin Întreprindere Familială<br>CUI 19732210 · Nr. Reg. Com. F15/564/01.07.2002 · EUID ROONRC.F15/564/2002 · Neplătitor de TVA<br>Str. Al. Ioan Cuza nr. 2, bl. 2, sc. A, Târgoviște, jud. Dâmbovița</p>
       </div>
       <div><h4>Categorii</h4><div id="fcats"></div></div>
       <div>
@@ -625,7 +625,7 @@ const LEGAL = {
     <h3>Plata</h3><ul>
       <li><b>Ramburs</b> – plătești la curier, la primirea coletului. Livrarea costă <b>${lei(SET.codFee)}</b>.</li>
       <li><b>Transfer bancar</b> – primești datele de plată la confirmarea comenzii; ${SHIPTXT()}. Expediem după ce plata a intrat în cont.</li></ul>
-    <p>Prețurile afișate sunt în lei. Factura se emite pentru fiecare comandă.</p>`,
+    <p>Prețurile afișate sunt în lei; firma nu este plătitoare de TVA. Factura se emite pentru fiecare comandă.</p>`,
   retur:() => `<h2>Retur și rambursare</h2>
     <h3>Dreptul de retragere</h3><p>Conform OUG nr. 34/2014, ai dreptul să te retragi din contract în termen de <b>14 zile calendaristice</b> de la primirea produsului, fără să fie nevoie să motivezi decizia.</p>
     <h3>Cum returnezi un produs</h3><ul>
@@ -640,9 +640,9 @@ const LEGAL = {
     <h3>Produse deteriorate la transport</h3><p>Dacă produsul ajunge deteriorat, fă poze coletului și produsului și anunță-ne în 48 de ore. Îl înlocuim sau îți returnăm banii, fără costuri pentru tine.</p>
     <p>Pentru orice nemulțumire ne poți contacta direct; poți apela și la ANPC (anpc.ro) sau la platforma europeană SOL.</p>`,
   termeni:() => `<h2>Termeni și condiții</h2>
-    <h3>1. Vânzătorul</h3><p>Site-ul ArtDeco este administrat de <b>Burlacov-Iordache A. Constantin Întreprindere Familială</b>, cu sediul în Târgoviște, Str. Al. Ioan Cuza nr. 2, bl. 2, sc. A, jud. Dâmbovița, CUI 19732210, Nr. Reg. Com. F15/564/01.07.2002. Telefon: ${PHONE_TXT}.</p>
+    <h3>1. Vânzătorul</h3><p>Site-ul ArtDeco este administrat de <b>Burlacov-Iordache A. Constantin Întreprindere Familială</b>, cu sediul în Târgoviște, Str. Al. Ioan Cuza nr. 2, bl. 2, sc. A, jud. Dâmbovița, CUI 19732210, Nr. Reg. Com. F15/564/01.07.2002, neplătitoare de TVA. Telefon: ${PHONE_TXT}.</p>
     <h3>2. Produsele</h3><p>Produsele sunt realizate manual. Fotografiile prezintă produsul real, dar culorile pot diferi ușor în funcție de ecran, iar piesele lucrate manual pot avea mici variații. Produsele marcate „la comandă” se realizează după primirea comenzii și pot fi foarte asemănătoare, dar nu identice, cu cele din fotografii.</p>
-    <h3>3. Prețuri</h3><p>Prețurile sunt afișate în lei și sunt prețuri finale pentru produse. Costul livrării se adaugă separat și este afișat înainte de trimiterea comenzii. Valoarea minimă a unei comenzi este ${lei(SET.minOrder)}.</p>
+    <h3>3. Prețuri</h3><p>Prețurile sunt afișate în lei și sunt prețuri finale pentru produse. Firma nu este plătitoare de TVA, așa că prețurile nu conțin TVA. Costul livrării se adaugă separat și este afișat înainte de trimiterea comenzii. Valoarea minimă a unei comenzi este ${lei(SET.minOrder)}.</p>
     <h3>4. Comanda</h3><p>Comanda se trimite din coșul de cumpărături, prin WhatsApp sau telefonic. Contractul se încheie în momentul în care confirmăm comanda telefonic sau în scris. Ne rezervăm dreptul de a refuza o comandă dacă produsul nu mai este disponibil sau datele de livrare sunt incomplete; în acest caz te anunțăm imediat.</p>
     <h3>5. Plata și livrarea</h3><p>Plata se face ramburs, la curier, sau prin transfer bancar. Detaliile despre costuri și termene sunt în pagina <a href="#" data-legal="livrare">Livrare și plată</a>.</p>
     <h3>6. Dreptul de retragere</h3><p>Ai dreptul să returnezi produsele în 14 zile de la primire, conform OUG nr. 34/2014. Condițiile sunt descrise în pagina <a href="#" data-legal="retur">Retur și rambursare</a>.</p>
