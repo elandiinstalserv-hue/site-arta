@@ -170,6 +170,8 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
 .radio{display:flex !important;gap:10px;align-items:center;font-weight:500 !important}
 .radio input{width:auto}
 .out{background:var(--bg);border-radius:12px;padding:14px;white-space:pre-wrap;font-size:13px;max-height:220px;overflow:auto}
+.legal h3{font-size:16px;margin:18px 0 6px;color:var(--blue)}
+.legal p,.legal li{color:#333;font-size:15px}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;z-index:70;transition:.25s;font-weight:600}
 .toast.on{transform:translateX(-50%)}
 
@@ -234,7 +236,7 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
 
     <div class="usp">
       <div><b>100% handmade</b>Fiecare piesă e lucrată manual și e unicat</div>
-      <div><b>Livrare în toată țara</b>Prin curier, în 1–3 zile lucrătoare</div>
+      <div><b>Livrare în toată țara</b><span id="uspShip">Comandă minimă 100 lei</span></div>
       <div><b>Plata la livrare</b>Ramburs la curier sau transfer bancar</div>
       <div><b>Retur în 14 zile</b>Conform legislației în vigoare</div>
     </div>
@@ -260,9 +262,9 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
     <div class="wrap">
       <h2>Livrare, plată și retur</h2>
       <div class="two-col" style="align-items:start;grid-template-columns:repeat(3,1fr)">
-        <div><h3 style="color:var(--blue);margin-bottom:6px">Livrare</h3><p style="color:var(--muted);margin:0">Expediem prin curier în toată România, în 1–3 zile lucrătoare de la confirmarea comenzii. Cost transport: <span class="todo">de completat</span>.</p></div>
+        <div><h3 style="color:var(--blue);margin-bottom:6px">Livrare</h3><p style="color:var(--muted);margin:0">Expediem prin curier în toată România, în 1–3 zile lucrătoare de la confirmarea comenzii. Comanda minimă: <b class="js-min">100 lei</b>. Livrare cu plata ramburs: <b class="js-cod">25 lei</b>. <a href="#" data-legal="livrare">Detalii</a></p></div>
         <div><h3 style="color:var(--blue);margin-bottom:6px">Plată</h3><p style="color:var(--muted);margin:0">Plătești ramburs, la curier, sau prin transfer bancar. După ce trimiți comanda, te sunăm să o confirmăm.</p></div>
-        <div><h3 style="color:var(--blue);margin-bottom:6px">Retur</h3><p style="color:var(--muted);margin:0">Poți returna produsul în 14 zile de la primire, fără să spui motivul. Lucrările făcute la comandă, după indicațiile tale, nu se pot returna.</p></div>
+        <div><h3 style="color:var(--blue);margin-bottom:6px">Retur</h3><p style="color:var(--muted);margin:0">Poți returna produsul în 14 zile de la primire, fără să spui motivul, și îți returnăm banii în cel mult 14 zile. Lucrările personalizate, făcute după indicațiile tale, nu se pot returna. <a href="#" data-legal="retur">Detalii</a></p></div>
       </div>
     </div>
   </section>
@@ -291,7 +293,8 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
       <div><h4>Categorii</h4><div id="fcats"></div></div>
       <div>
         <h4>Informații</h4>
-        <a href="#livrare">Livrare și retur</a>
+        <a href="#" data-legal="livrare">Livrare și plată</a>
+        <a href="#" data-legal="retur">Retur și rambursare</a>
         <a href="#" data-legal="termeni">Termeni și condiții</a>
         <a href="#" data-legal="gdpr">Politica de confidențialitate</a>
         <a href="#contact">Contact</a>
@@ -317,7 +320,9 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
   <div class="dbody" id="lines"></div>
   <div class="dfoot">
     <div class="tot"><span>Total produse</span><span id="total">0 lei</span></div>
+    <div id="minNote" style="display:none;background:#FFF4C2;color:#6b5600;border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:10px"></div>
     <button class="btn" style="width:100%" id="toCheckout">Finalizează comanda</button>
+    <p id="shipNote" style="font-size:12px;color:var(--muted);margin:8px 0 0;text-align:center"></p>
   </div>
 </aside>
 <div class="modal" id="modal" role="dialog" aria-modal="true"><div class="mbox" id="mbox"></div></div>
@@ -327,6 +332,7 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
 /* ============ DATE MAGAZIN ============ */
 const WHATSAPP = "40766588504";      // format internațional, fără +
 const PHONE_TXT = "0766 588 504";
+let SET = { minOrder: 100, codFee: 25, transferShip: "" };   // se actualizează din /api/settings
 
 const CATS = [
   {id:"tablouri",   name:"Tablouri pictate",        icon:"🖼️", art:"tablou"},
@@ -525,34 +531,45 @@ function renderCart(){
     <div class="line"><div class="mini">${visual(p)}</div>
       <div><h4>${esc(p.name)}</h4><div class="qty"><button data-q="${id}" data-d="-1">−</button><b>${cart[id]}</b><button data-q="${id}" data-d="1">+</button></div></div>
       <b>${lei(p.price*cart[id])}</b></div>`; }).join("") : `<p style="color:var(--muted)">Coșul e gol. Adaugă un produs care îți place.</p>`;
-  $("#toCheckout").disabled = !ids.length; $("#toCheckout").style.opacity = ids.length ? 1 : .5;
+  const short = ids.length && total < SET.minOrder;
+  $("#minNote").style.display = short ? "block" : "none";
+  if (short) $("#minNote").innerHTML = `Comanda minimă este <b>${lei(SET.minOrder)}</b>. Mai adaugă produse de <b>${lei(Math.round((SET.minOrder - total) * 100) / 100)}</b>.`;
+  $("#shipNote").textContent = `Livrare cu plata ramburs: ${lei(SET.codFee)}` + (SET.transferShip !== "" ? ` · cu plata prin transfer: ${lei(+SET.transferShip)}` : "");
+  const can = ids.length && !short;
+  $("#toCheckout").disabled = !can; $("#toCheckout").style.opacity = can ? 1 : .5;
   return {ids,total};
 }
 $("#lines").onclick = e => { const b=e.target.closest("[data-q]"); if(!b) return; const id=b.dataset.q; cart[id]=Math.max(0,(cart[id]||0)+Number(b.dataset.d)); if(!cart[id]) delete cart[id]; store.set("artdeco-cart",cart); renderCart(); renderCounts(); };
 
 $("#toCheckout").onclick = () => {
-  const {ids,total} = renderCart(); if (!ids.length) return;
+  const {ids,total} = renderCart(); if (!ids.length || total < SET.minOrder) return;
+  const shipFor = pay => pay === "Transfer bancar" ? (SET.transferShip === "" ? null : +SET.transferShip) : +SET.codFee;
   closeAll();
   $("#mbox").innerHTML = `<button class="x" data-close>×</button><div style="padding:30px">
-    <h2>Finalizează comanda</h2><p style="color:var(--muted);margin-top:0">Total produse: <b>${lei(total)}</b> + transport. Te sunăm să confirmăm comanda.</p>
+    <h2>Finalizează comanda</h2><p style="color:var(--muted);margin-top:0">Te sunăm să confirmăm comanda înainte de expediere.</p>
     <form id="order">
       <div class="g2"><div><label>Nume și prenume *</label><input name="nume" required autocomplete="name"></div><div><label>Telefon *</label><input name="tel" type="tel" required autocomplete="tel"></div></div>
       <label>Email</label><input name="email" type="email" autocomplete="email">
       <label>Adresa de livrare *</label><input name="adresa" required autocomplete="street-address">
       <div class="g2"><div><label>Localitate *</label><input name="oras" required></div><div><label>Județ *</label><input name="judet" required></div></div>
       <label>Plata</label>
-      <label class="radio"><input type="radio" name="plata" value="Ramburs la curier" checked> Ramburs, la curier</label>
-      <label class="radio"><input type="radio" name="plata" value="Transfer bancar"> Transfer bancar</label>
+      <label class="radio"><input type="radio" name="plata" value="Ramburs la curier" checked> Ramburs, la curier (livrare ${lei(SET.codFee)})</label>
+      <label class="radio"><input type="radio" name="plata" value="Transfer bancar"> Transfer bancar (livrare ${SET.transferShip === "" ? "comunicată la confirmare" : lei(+SET.transferShip)})</label>
+      <div id="sumBox" style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:14px"></div>
       <label>Observații</label><textarea name="obs" rows="2"></textarea>
       <label class="radio" style="margin-top:14px"><input type="checkbox" required> Sunt de acord cu termenii și condițiile și cu politica de confidențialitate *</label>
       <button class="btn" style="width:100%;margin-top:16px">Trimite comanda</button>
     </form></div>`;
   $("#modal").classList.add("on"); $("#ov").classList.add("on");
+  const sum = () => { const pay = new FormData($("#order")).get("plata"); const s = shipFor(pay);
+    $("#sumBox").innerHTML = `Produse: <b>${lei(total)}</b><br>Livrare: <b>${s === null ? "se comunică la confirmare" : lei(s)}</b><br><span style="font-size:16px">Total de plată: <b>${s === null ? lei(total) + " + livrare" : lei(Math.round((total + s) * 100) / 100)}</b></span>`; };
+  $("#order").addEventListener("change", sum); sum();
   $("#order").onsubmit = ev => {
     ev.preventDefault();
     const f = Object.fromEntries(new FormData(ev.target));
     const lines = ids.map(id => `• ${byId(id).name} × ${cart[id]} = ${lei(byId(id).price*cart[id])}`).join("\n");
-    const msg = `Comandă nouă ArtDeco\n\n${lines}\n\nTotal produse: ${lei(total)}\n\nNume: ${f.nume}\nTelefon: ${f.tel}\nEmail: ${f.email||"-"}\nAdresă: ${f.adresa}, ${f.oras}, jud. ${f.judet}\nPlata: ${f.plata}\nObservații: ${f.obs||"-"}`;
+    const s = shipFor(f.plata);
+    const msg = `Comandă nouă ArtDeco\n\n${lines}\n\nTotal produse: ${lei(total)}\nLivrare: ${s === null ? "se comunică la confirmare" : lei(s)}\nTotal de plată: ${s === null ? lei(total) + " + livrare" : lei(Math.round((total + s) * 100) / 100)}\n\nNume: ${f.nume}\nTelefon: ${f.tel}\nEmail: ${f.email||"-"}\nAdresă: ${f.adresa}, ${f.oras}, jud. ${f.judet}\nPlata: ${f.plata}\nObservații: ${f.obs||"-"}`;
     const wa = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
     $("#mbox").innerHTML = `<button class="x" data-close>×</button><div style="padding:30px">
       <h2>Mai e un pas</h2><p>Apasă butonul de mai jos ca să ne trimiți comanda pe WhatsApp. Dacă nu ai WhatsApp, sună-ne la <b>${PHONE_TXT}</b> sau copiază textul comenzii.</p>
@@ -564,18 +581,47 @@ $("#toCheckout").onclick = () => {
   };
 };
 
+const SHIPTXT = () => SET.transferShip === "" ? "costul livrării se comunică la confirmarea comenzii" : `livrarea costă ${lei(+SET.transferShip)}`;
 const LEGAL = {
+  livrare:() => `<h2>Livrare și plată</h2>
+    <h3>Comanda minimă</h3><p>Valoarea minimă a unei comenzi este <b>${lei(SET.minOrder)}</b> (valoarea produselor, fără livrare).</p>
+    <h3>Livrarea</h3><p>Expediem coletele prin curier, oriunde în România, în 1–3 zile lucrătoare de la confirmarea telefonică a comenzii. Produsele marcate „la comandă” se realizează manual; termenul de execuție îți este comunicat la confirmare.</p>
+    <p>Fiecare produs este ambalat cu grijă, ca să ajungă intact. Te rugăm să verifici coletul la primire, în prezența curierului.</p>
+    <h3>Plata</h3><ul>
+      <li><b>Ramburs</b> – plătești la curier, la primirea coletului. Livrarea costă <b>${lei(SET.codFee)}</b>.</li>
+      <li><b>Transfer bancar</b> – primești datele de plată la confirmarea comenzii; ${SHIPTXT()}. Expediem după ce plata a intrat în cont.</li></ul>
+    <p>Prețurile afișate sunt în lei. Factura se emite pentru fiecare comandă.</p>`,
+  retur:() => `<h2>Retur și rambursare</h2>
+    <h3>Dreptul de retragere</h3><p>Conform OUG nr. 34/2014, ai dreptul să te retragi din contract în termen de <b>14 zile calendaristice</b> de la primirea produsului, fără să fie nevoie să motivezi decizia.</p>
+    <h3>Cum returnezi un produs</h3><ul>
+      <li>Ne anunți în termenul de 14 zile, telefonic sau pe WhatsApp la <b>${PHONE_TXT}</b> ori prin email, cu numele, numărul comenzii și produsul returnat.</li>
+      <li>Trimiți produsul în cel mult 14 zile de la anunțare, în starea în care l-ai primit, nefolosit și nedeteriorat, de preferat în ambalajul original.</li>
+      <li>Costul transportului pentru retur este suportat de client.</li></ul>
+    <h3>Rambursarea banilor</h3><ul>
+      <li>Îți returnăm toate sumele plătite, inclusiv costul livrării inițiale standard, în cel mult <b>14 zile</b> de la data la care ne-ai anunțat retragerea.</li>
+      <li>Putem amâna rambursarea până primim produsul înapoi sau până ne trimiți dovada expedierii lui.</li>
+      <li>Banii se returnează prin transfer bancar, în contul (IBAN) pe care ni-l comunici. Pentru comenzile plătite prin transfer, rambursarea se face în contul din care s-a plătit, dacă nu convenim altfel.</li></ul>
+    <h3>Excepții</h3><p>Dreptul de retragere nu se aplică produselor realizate după specificațiile tale sau personalizate în mod clar (de exemplu un tablou după o fotografie trimisă de tine sau un glob cu numele familiei).</p>
+    <h3>Produse deteriorate la transport</h3><p>Dacă produsul ajunge deteriorat, fă poze coletului și produsului și anunță-ne în 48 de ore. Îl înlocuim sau îți returnăm banii, fără costuri pentru tine.</p>
+    <p>Pentru orice nemulțumire ne poți contacta direct; poți apela și la ANPC (anpc.ro) sau la platforma europeană SOL.</p>`,
   termeni:`<h2>Termeni și condiții</h2><p><span class="todo">Text de completat cu datele firmei.</span> Aici vor fi: datele vânzătorului (denumire, CUI, adresă), modul de plasare și confirmare a comenzii, prețuri și plată, livrare, dreptul de retragere în 14 zile, garanția și soluționarea litigiilor (ANPC, SAL, SOL).</p>`,
   gdpr:`<h2>Politica de confidențialitate</h2><p><span class="todo">Text de completat cu datele firmei.</span> Folosim datele tale (nume, telefon, adresă, email) doar pentru a procesa și livra comanda. Nu le vindem și nu le dăm altor firme, cu excepția curierului care livrează coletul. Poți cere oricând ștergerea datelor.</p>`
 };
-function openLegal(k){ closeAll(); $("#mbox").innerHTML=`<button class="x" data-close>×</button><div style="padding:30px">${LEGAL[k]}</div>`; $("#modal").classList.add("on"); $("#ov").classList.add("on"); }
+function openLegal(k){ closeAll(); const d = LEGAL[k]; $("#mbox").innerHTML=`<button class="x" data-close>×</button><div class="legal" style="padding:30px;max-width:760px">${typeof d === "function" ? d() : d}</div>`; $("#modal").classList.add("on"); $("#ov").classList.add("on"); }
 
 $("#waContact").href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Bună ziua! Aș dori o lucrare la comandă de la ArtDeco.")}`;
 $("#yr").textContent = new Date().getFullYear();
 render(); renderCart();
 function openFromHash(){ const m = location.hash.match(/^#produs-(.+)$/); if (m && byId(m[1])) openProduct(m[1]); }
 window.addEventListener("hashchange", openFromHash);
-fetch("/api/settings").then(r => r.ok ? r.json() : null).then(s => { if (s) { $("#aboutTitle").textContent = s.aboutTitle; $("#aboutText").innerHTML = paras(s.aboutText); } }).catch(() => {});
+function applySettings(){
+  document.querySelectorAll(".js-min").forEach(e => e.textContent = lei(SET.minOrder));
+  document.querySelectorAll(".js-cod").forEach(e => e.textContent = lei(SET.codFee));
+  $("#uspShip").textContent = `Comandă minimă ${lei(SET.minOrder)} · ramburs ${lei(SET.codFee)}`;
+  renderCart();
+}
+applySettings();
+fetch("/api/settings").then(r => r.ok ? r.json() : null).then(s => { if (s) { SET = { ...SET, ...s }; $("#aboutTitle").textContent = s.aboutTitle; $("#aboutText").innerHTML = paras(s.aboutText); applySettings(); } }).catch(() => {});
 fetch("/api/products", {cache:"no-store"})
   .then(r => r.ok ? r.json() : Promise.reject())
   .then(list => { if (Array.isArray(list)) { PRODUCTS = list; for (const id of Object.keys(cart)) if (!byId(id)) delete cart[id]; render(); renderCart(); } })
