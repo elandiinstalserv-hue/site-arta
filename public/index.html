@@ -591,6 +591,7 @@ $("#toCheckout").onclick = () => {
       <label class="radio"><input type="radio" name="plata" value="Transfer bancar"> Transfer bancar (livrare ${SET.transferShip === "" ? "comunicată la confirmare" : lei(+SET.transferShip)})</label>
       <div id="sumBox" style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:14px"></div>
       <label>Observații</label><textarea name="obs" rows="2"></textarea>
+      <input name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
       <label class="radio" style="margin-top:14px"><input type="checkbox" required> Sunt de acord cu termenii și condițiile și cu politica de confidențialitate *</label>
       <button class="btn" style="width:100%;margin-top:16px">Trimite comanda</button>
     </form></div>`;
@@ -598,20 +599,28 @@ $("#toCheckout").onclick = () => {
   const sum = () => { const pay = new FormData($("#order")).get("plata"); const s = shipFor(pay);
     $("#sumBox").innerHTML = `Produse: <b>${lei(total)}</b><br>Livrare: <b>${s === null ? "se comunică la confirmare" : lei(s)}</b><br><span style="font-size:16px">Total de plată: <b>${s === null ? lei(total) + " + livrare" : lei(Math.round((total + s) * 100) / 100)}</b></span>`; };
   $("#order").addEventListener("change", sum); sum();
-  $("#order").onsubmit = ev => {
+  $("#order").onsubmit = async ev => {
     ev.preventDefault();
     const f = Object.fromEntries(new FormData(ev.target));
-    const lines = ids.map(id => `• ${byId(id).name} × ${cart[id]} = ${lei(byId(id).price*cart[id])}`).join("\n");
-    const s = shipFor(f.plata);
-    const msg = `Comandă nouă ArtDeco\n\n${lines}\n\nTotal produse: ${lei(total)}\nLivrare: ${s === null ? "se comunică la confirmare" : lei(s)}\nTotal de plată: ${s === null ? lei(total) + " + livrare" : lei(Math.round((total + s) * 100) / 100)}\n\nNume: ${f.nume}\nTelefon: ${f.tel}\nEmail: ${f.email||"-"}\nAdresă: ${f.adresa}, ${f.oras}, jud. ${f.judet}\nPlata: ${f.plata}\nObservații: ${f.obs||"-"}`;
-    const wa = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    $("#mbox").innerHTML = `<button class="x" data-close>×</button><div style="padding:30px">
-      <h2>Mai e un pas</h2><p>Apasă butonul de mai jos ca să ne trimiți comanda pe WhatsApp. Dacă nu ai WhatsApp, sună-ne la <b>${PHONE_TXT}</b> sau copiază textul comenzii.</p>
-      <a class="btn green" href="${wa}" target="_blank" rel="noopener" style="width:100%">Trimite comanda pe WhatsApp</a>
-      <p style="margin:18px 0 6px;font-weight:600">Textul comenzii:</p><div class="out" id="otxt"></div>
-      <button class="btn ghost" id="copy" style="margin-top:12px">Copiază textul</button></div>`;
-    $("#otxt").textContent = msg;
-    $("#copy").onclick = async () => { try { await navigator.clipboard.writeText(msg); toast("Text copiat ✓"); } catch(e) { toast("Selectează textul și copiază-l manual"); } };
+    const btn = ev.target.querySelector("button.btn"); btn.disabled = true; btn.textContent = "Se trimite…";
+    let res;
+    try {
+      const r = await fetch("/api/orders", { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({ ...f, items: ids.map(id => ({ id, qty: cart[id] })) }) });
+      res = await r.json();
+      if (!r.ok) throw new Error(res.error || "Comanda nu a putut fi trimisă.");
+    } catch(err) {
+      btn.disabled = false; btn.textContent = "Trimite comanda";
+      toast(err.message || "Comanda nu a putut fi trimisă. Încearcă din nou sau sună-ne."); return;
+    }
+    cart = {}; store.set("artdeco-cart", cart); renderCart(); renderCounts();
+    const wa = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(res.text)}`;
+    $("#mbox").innerHTML = `<button class="x" data-close>×</button><div style="padding:30px;text-align:center">
+      <div style="font-size:48px">✅</div>
+      <h2>Mulțumim! Comanda a fost înregistrată.</h2>
+      <p style="font-size:17px">Numărul comenzii: <b>${esc(res.id)}</b></p>
+      <p style="color:var(--muted)">Te sunăm în curând la <b>${esc(f.tel)}</b> ca să confirmăm comanda și livrarea. Pentru întrebări ne găsești la ${PHONE_TXT}.</p>
+      <a class="btn green" href="${wa}" target="_blank" rel="noopener" style="margin-top:8px">Trimite-ne comanda și pe WhatsApp (opțional)</a>
+      <div style="margin-top:12px"><button class="btn ghost" data-close>Înapoi la magazin</button></div></div>`;
   };
 };
 

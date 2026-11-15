@@ -115,12 +115,19 @@ textarea{resize:vertical}
         <h2>Produse <span id="cnt" style="color:var(--muted);font-weight:500;font-size:16px"></span></h2>
         <input id="search" type="search" placeholder="Caută…">
         <select id="fcat"><option value="">Toate categoriile</option></select>
+        <button class="btn light" id="ordBtn">🧾 Comenzi <span id="ordN" style="background:#C62828;color:#fff;border-radius:99px;padding:0 7px;font-size:12px;display:none"></span></button>
         <button class="btn light" id="aboutBtn">⚙️ Setări magazin</button>
         <button class="btn light" id="impBtn">⬇ Importă din eMAG</button>
         <button class="btn" id="newBtn">＋ Adaugă produs</button>
       </div>
       <div id="hidNote"></div>
       <div class="list" id="list"></div>
+    </div>
+
+    <!-- COMENZI -->
+    <div id="ordView" style="display:none">
+      <div class="bar"><h2>Comenzi</h2><select id="ordF"><option value="">Toate</option><option>nouă</option><option>confirmată</option><option>expediată</option><option>finalizată</option><option>anulată</option></select><button class="btn light sm" id="ordBack">← Înapoi la produse</button></div>
+      <div class="list" id="ordList"></div>
     </div>
 
     <!-- DESPRE NOI -->
@@ -275,7 +282,7 @@ $("#logout").onclick = logout;
 
 async function start(){
   $("#loginView").style.display = "none"; $("#appView").style.display = "block";
-  await load();
+  await load(); loadOrders();
   if (impItems.length) { $("#listView").style.display="none"; $("#impView").style.display="block"; impSummary(); } else showList();
 }
 async function load(){
@@ -317,7 +324,7 @@ $("#list").onclick = async e => {
     catch(err) { toast(err.message); sd.disabled = false; }
   }
 };
-function showList(){ $("#formView").style.display="none"; $("#impView").style.display="none"; $("#aboutView").style.display="none"; $("#listView").style.display="block"; window.scrollTo(0,0); }
+function showList(){ $("#formView").style.display="none"; $("#impView").style.display="none"; $("#aboutView").style.display="none"; $("#ordView").style.display="none"; $("#listView").style.display="block"; window.scrollTo(0,0); }
 $("#newBtn").onclick = () => openForm(null);
 
 /* ---------- formular ---------- */
@@ -415,6 +422,44 @@ $("#delBtn").onclick = async () => {
     await Promise.all(uploadedNow.map(u => api("/api/upload?url=" + encodeURIComponent(u), { method:"DELETE" }).catch(()=>{})));
     uploadedNow = []; toast("Produs șters"); await load(); showList();
   } catch(err) { toast(err.message); }
+};
+
+/* ---------- comenzi ---------- */
+let orders = [];
+const ST_COL = { "nouă":"#C62828", "confirmată":"#1B4A9C", "expediată":"#8a5a00", "finalizată":"#1E9A3A", "anulată":"#777" };
+async function loadOrders(){
+  try { orders = await api("/api/orders"); const n = orders.filter(o => o.status === "nouă").length; $("#ordN").textContent = n; $("#ordN").style.display = n ? "inline-block" : "none"; }
+  catch(e) { orders = []; }
+}
+function renderOrders(){
+  const f = $("#ordF").value; const list = orders.filter(o => !f || o.status === f);
+  $("#ordList").innerHTML = list.length ? list.map(o => `
+    <div class="card" style="padding:16px">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <b style="font-size:16px">${esc(o.id)}</b>
+        <span class="tag" style="background:${ST_COL[o.status]||"#555"};color:#fff">${esc(o.status.toUpperCase())}</span>
+        <span style="color:var(--muted);font-size:13px">${new Date(o.created).toLocaleString("ro-RO")}</span>
+        <b style="margin-left:auto">${o.total === null ? lei(o.subtotal) + " + livrare" : lei(o.total)}</b>
+      </div>
+      <div style="margin-top:8px;font-size:14px"><b>${esc(o.customer.nume)}</b> · <a href="tel:${esc(o.customer.tel)}">${esc(o.customer.tel)}</a>${o.customer.email ? " · " + esc(o.customer.email) : ""}<br>
+        <span style="color:var(--muted)">${esc(o.customer.adresa)}, ${esc(o.customer.oras)}, jud. ${esc(o.customer.judet)} · ${esc(o.payment)}</span></div>
+      <ul style="margin:8px 0;padding-left:18px;font-size:14px">${o.items.map(i => `<li>${esc(i.name)} × ${i.qty} = ${lei(i.price*i.qty)}${i.sold?" <i>(la comandă)</i>":""}</li>`).join("")}</ul>
+      ${o.customer.obs ? `<div style="font-size:13px;background:#FFF8E1;border-radius:8px;padding:6px 10px">Observații: ${esc(o.customer.obs)}</div>` : ""}
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+        <label style="margin:0">Stare:</label>
+        <select data-ord="${esc(o.id)}" style="width:auto">${["nouă","confirmată","expediată","finalizată","anulată"].map(s => `<option ${s===o.status?"selected":""}>${s}</option>`).join("")}</select>
+        <a class="btn light sm" href="https://wa.me/${esc(o.customer.tel.replace(/[^0-9]/g,"").replace(/^0/,"40"))}" target="_blank" rel="noopener">💬 WhatsApp client</a>
+      </div>
+    </div>`).join("") : `<div class="card empty">${orders.length ? "Nicio comandă cu această stare." : "Nu ai încă nicio comandă."}</div>`;
+}
+$("#ordBtn").onclick = async () => { $("#listView").style.display="none"; $("#ordView").style.display="block"; window.scrollTo(0,0); await loadOrders(); renderOrders(); };
+$("#ordBack").onclick = () => showList();
+$("#ordF").onchange = renderOrders;
+$("#ordList").onchange = async e => {
+  const s = e.target.closest("[data-ord]"); if (!s) return;
+  try { const o = await api("/api/orders/" + encodeURIComponent(s.dataset.ord), { method:"PUT", headers:{"content-type":"application/json"}, body: JSON.stringify({ status: s.value }) });
+    const i = orders.findIndex(x => x.id === o.id); orders[i] = o; renderOrders(); await loadOrders(); toast("Starea comenzii a fost actualizată ✓"); }
+  catch(err) { toast(err.message); }
 };
 
 /* ---------- despre noi ---------- */
