@@ -236,7 +236,6 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
     <div class="wrap">
       <div class="crumbs" id="crumbs"></div>
       <div class="ptitle"><h1 id="title">Toate produsele</h1><span class="script">lucrate manual</span></div>
-      <div class="subcats" id="subcats"></div>
     </div>
   </div>
 
@@ -466,7 +465,7 @@ function renderHead(){
   const title = state.onlyFav ? "Produsele mele favorite" : (c ? c.name : "Toate produsele");
   $("#title").textContent = title;
   $("#crumbs").innerHTML = `<a href="#" data-cat="toate">ArtDeco</a>` + (state.onlyFav ? " › Favorite" : c ? ` › ${c.name}` : "");
-  $("#subcats").innerHTML = CATS.map(k => {
+  if ($("#subcats")) $("#subcats").innerHTML = CATS.map(k => {
     const n = PRODUCTS.filter(p=>p.cat===k.id).length;
     return `<button class="sub ${state.cat===k.id&&!state.onlyFav?"on":""}" data-cat="${k.id}"><span class="st">${(()=>{const f=PRODUCTS.find(p=>p.cat===k.id&&p.images&&p.images[0]);return f?visual(f):ART[k.art];})()}</span><span>${k.name}<small>${n ? n + (n===1?" produs":" produse") : "în curând"}</small></span></button>`;
   }).join("");
