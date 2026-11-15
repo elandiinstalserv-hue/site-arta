@@ -115,10 +115,25 @@ textarea{resize:vertical}
         <h2>Produse <span id="cnt" style="color:var(--muted);font-weight:500;font-size:16px"></span></h2>
         <input id="search" type="search" placeholder="Caută…">
         <select id="fcat"><option value="">Toate categoriile</option></select>
+        <button class="btn light" id="aboutBtn">📝 Despre noi</button>
         <button class="btn light" id="impBtn">⬇ Importă din eMAG</button>
         <button class="btn" id="newBtn">＋ Adaugă produs</button>
       </div>
+      <div id="hidNote"></div>
       <div class="list" id="list"></div>
+    </div>
+
+    <!-- DESPRE NOI -->
+    <div id="aboutView" style="display:none">
+      <div class="bar"><h2>Pagina „Despre noi”</h2><button class="btn light sm" id="aboutBack">← Înapoi la listă</button></div>
+      <form id="aboutForm" class="card">
+        <label for="ab-title">Titlu</label>
+        <input id="ab-title" maxlength="150">
+        <label for="ab-text">Text</label>
+        <textarea id="ab-text" rows="14" maxlength="10000" placeholder="Povestea ta: cine pictează, de când, ce te inspiră…"></textarea>
+        <div class="hint">Lasă un rând gol între paragrafe. Textul apare în magazin, în secțiunea „Despre noi”.</div>
+        <div class="foot"><a class="btn light" href="/#despre" target="_blank" rel="noopener">👁 Vezi în magazin</a><button class="btn" id="abSave">💾 Salvează</button></div>
+      </form>
     </div>
 
     <!-- IMPORT -->
@@ -184,7 +199,7 @@ textarea{resize:vertical}
 
         <div class="checks">
           <label><input type="checkbox" name="isNew"> Etichetă „NOU”</label>
-          <label><input type="checkbox" name="sold"> Vândut</label>
+          <label><input type="checkbox" name="sold"> Vândut (disponibil la comandă)</label>
           <label><input type="checkbox" name="hidden"> Ascuns (nu apare în magazin)</label>
         </div>
 
@@ -269,6 +284,10 @@ function renderList(){
   const q = $("#search").value.trim().toLowerCase(), c = $("#fcat").value;
   const list = products.filter(p => (!c || p.cat === c) && (!q || p.name.toLowerCase().includes(q)));
   $("#cnt").textContent = `(${products.length})`;
+  const hid = products.filter(p => p.hidden).length;
+  $("#hidNote").innerHTML = hid ? `<div class="card" style="margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#FFF8E1;box-shadow:none">
+    <div style="flex:1;min-width:220px"><b>${hid} produse sunt ascunse</b> (inactive pe eMAG). Le poți arăta în magazin ca <b>„Vândut – disponibil la comandă”</b>.</div>
+    <button class="btn sm" id="hidToSold">Arată-le ca vândute, la comandă</button></div>` : "";
   $("#list").innerHTML = list.length ? list.map(p => `
     <div class="row">
       <div class="ph">${p.images && p.images[0] ? `<img src="${esc(p.images[0])}" alt="">` : "fără<br>poză"}</div>
@@ -290,7 +309,7 @@ $("#list").onclick = async e => {
     catch(err) { toast(err.message); sd.disabled = false; }
   }
 };
-function showList(){ $("#formView").style.display="none"; $("#impView").style.display="none"; $("#listView").style.display="block"; window.scrollTo(0,0); }
+function showList(){ $("#formView").style.display="none"; $("#impView").style.display="none"; $("#aboutView").style.display="none"; $("#listView").style.display="block"; window.scrollTo(0,0); }
 $("#newBtn").onclick = () => openForm(null);
 
 /* ---------- formular ---------- */
@@ -388,6 +407,30 @@ $("#delBtn").onclick = async () => {
     await Promise.all(uploadedNow.map(u => api("/api/upload?url=" + encodeURIComponent(u), { method:"DELETE" }).catch(()=>{})));
     uploadedNow = []; toast("Produs șters"); await load(); showList();
   } catch(err) { toast(err.message); }
+};
+
+/* ---------- despre noi ---------- */
+$("#aboutBtn").onclick = async () => {
+  $("#listView").style.display="none"; $("#aboutView").style.display="block"; window.scrollTo(0,0);
+  try { const s = await api("/api/settings"); $("#ab-title").value = s.aboutTitle || ""; $("#ab-text").value = s.aboutText || ""; } catch(err) { toast(err.message); }
+};
+$("#aboutBack").onclick = () => showList();
+$("#aboutForm").onsubmit = async e => {
+  e.preventDefault(); $("#abSave").disabled = true;
+  try { await api("/api/settings", { method:"PUT", headers:{"content-type":"application/json"}, body: JSON.stringify({ aboutTitle: $("#ab-title").value, aboutText: $("#ab-text").value }) }); toast("Textul a fost salvat ✓"); }
+  catch(err) { toast(err.message); }
+  $("#abSave").disabled = false;
+};
+/* ---------- ascunse → vândute ---------- */
+$("#hidNote").onclick = async e => {
+  if (!e.target.closest("#hidToSold")) return;
+  const n = products.filter(p => p.hidden).length;
+  $("#dlgYes").textContent = "Da, arată-le";
+  const ok = await confirmBox("Arăți produsele ascunse?", `${n} produse vor apărea în magazin cu eticheta „Vândut – disponibil la comandă”. Clienții nu le pot cumpăra direct, dar te pot contacta să le comanzi.`);
+  $("#dlgYes").textContent = "Da, șterge";
+  if (!ok) return;
+  try { const r = await api("/api/bulk", { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({ action:"hidden-to-sold" }) }); toast(`${r.changed} produse sunt acum în magazin, la comandă ✓`); await load(); }
+  catch(err) { toast(err.message); }
 };
 
 /* ---------- import din eMAG ---------- */

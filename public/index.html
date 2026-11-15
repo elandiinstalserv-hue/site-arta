@@ -95,6 +95,7 @@ h1{font-size:32px;margin:0;font-weight:800;letter-spacing:-.4px}
 .quick{position:absolute;left:10px;right:10px;bottom:10px;border:0;background:var(--blue);color:#fff;border-radius:10px;padding:11px;font-weight:700;font-size:14px;cursor:pointer;opacity:0;transform:translateY(8px);transition:.2s}
 .card:hover .quick{opacity:1;transform:none}
 .cprice{font-weight:800;font-size:18px;margin-top:12px}
+.cmd{display:block;font-size:12px;font-weight:600;color:var(--terra)}
 .cname{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .cattr{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .empty{grid-column:1/-1;background:var(--bg);border-radius:14px;padding:48px 20px;text-align:center;color:var(--muted)}
@@ -243,9 +244,9 @@ form input:focus,form textarea:focus{outline:2px solid var(--blue);border-color:
     <div class="wrap two-col">
       <div>
         <span class="script">Povestea noastră</span>
-        <h2>Artă făcută cu mâna, în Târgoviște</h2>
-        <p>ArtDeco a pornit din pasiunea pentru pictură și lucrul manual. Pictăm tablouri în ulei, decorăm globuri și obiecte cu culori acrilice și creăm gablonturi și obiecte de artizanat, fiecare cu răbdare și atenție la detalii.</p>
-        <p>Nu lucrăm în serie. Fiecare produs e realizat manual, de aceea poate avea mici diferențe față de fotografie. Asta e farmecul unui obiect făcut de mână.</p>
+        <h2 id="aboutTitle">Artă făcută cu mâna, în Târgoviște</h2>
+        <div id="aboutText"><p>ArtDeco a pornit din pasiunea pentru pictură și lucrul manual. Pictăm tablouri în ulei, decorăm globuri și obiecte cu culori acrilice și creăm gablonturi și obiecte de artizanat, fiecare cu răbdare și atenție la detalii.</p>
+        <p>Nu lucrăm în serie. Fiecare produs e realizat manual, de aceea poate avea mici diferențe față de fotografie. Asta e farmecul unui obiect făcut de mână.</p></div>
       </div>
       <div class="box">
         <h3 style="margin-top:0;color:var(--blue)">Lucrări la comandă</h3>
@@ -374,9 +375,10 @@ const store = {
 };
 let cart = store.get("artdeco-cart", {});
 let favs = store.get("artdeco-favs", []);
-const state = { cat:"toate", q:"", sort:"rec", onlyFav:false, f:{pret:[], dim:[], material:[], tehnica:[]} };
+const state = { cat:"toate", q:"", sort:"rec", onlyFav:false, f:{disp:[], pret:[], dim:[], material:[], tehnica:[]} };
 
 const FILTERS = {
+  disp:{label:"Disponibilitate", opts:[["stoc","Disponibile imediat",p=>!p.sold],["comanda","La comandă",p=>!!p.sold]]},
   pret:{label:"Preț", opts:[["sub50","Sub 50 lei",p=>p.price<50],["50-200","50 – 200 lei",p=>p.price>=50&&p.price<=200],["200-500","200 – 500 lei",p=>p.price>200&&p.price<=500],["peste500","Peste 500 lei",p=>p.price>500]]},
   dim:{label:"Dimensiuni", opts:[["mici","Mici (sub 20 cm)",p=>p.size<20],["medii","Medii (20 – 60 cm)",p=>p.size>=20&&p.size<=60],["mari","Mari (peste 60 cm)",p=>p.size>60]]},
   material:{label:"Material", dyn:p=>p.material},
@@ -403,6 +405,7 @@ function applyFilters(list, skip){
 }
 function sorted(list){
   const l = [...list];
+  if (state.sort==="rec") l.sort((a,b)=>(a.sold?1:0)-(b.sold?1:0));
   if (state.sort==="asc") l.sort((a,b)=>a.price-b.price);
   if (state.sort==="desc") l.sort((a,b)=>b.price-a.price);
   if (state.sort==="new") l.sort((a,b)=>(b.isNew?1:0)-(a.isNew?1:0));
@@ -446,11 +449,11 @@ function renderGrid(){
   $("#grid").innerHTML = list.length ? list.map(p => `
     <article class="card" data-open="${p.id}">
       <div class="img">${visual(p)}
-        ${p.sold ? `<span class="badge sold">VÂNDUT</span>` : p.isNew ? `<span class="badge">NOU</span>` : `<span class="badge">UNICAT</span>`}
+        ${p.sold ? `<span class="badge sold">LA COMANDĂ</span>` : p.isNew ? `<span class="badge">NOU</span>` : `<span class="badge">UNICAT</span>`}
         <button class="fav ${favs.includes(p.id)?"on":""}" data-fav="${p.id}" aria-label="Adaugă la favorite"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f1f22" stroke-width="2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></button>
-        ${p.sold ? "" : `<button class="quick" data-add="${p.id}">Adaugă în coș</button>`}
+        ${p.sold ? `<button class="quick" style="background:#555">Comandă unul similar</button>` : `<button class="quick" data-add="${p.id}">Adaugă în coș</button>`}
       </div>
-      <div class="cprice">${lei(p.price)}</div>
+      <div class="cprice">${lei(p.price)}${p.sold?`<span class="cmd">vândut · disponibil la comandă</span>`:""}</div>
       <div class="cname" title="${esc(p.name)}">${esc(p.name)}</div>
       <div class="cattr">${esc(p.attrs)}</div>
     </article>`).join("") :
@@ -466,7 +469,7 @@ function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"
 function closePops(except){ document.querySelectorAll(".pop.on").forEach(p=>{ if(p!==except) p.classList.remove("on"); }); }
 function closeAll(){ ["#menuDrawer","#cartDrawer","#modal","#ov"].forEach(s=>$(s).classList.remove("on")); if (location.hash.startsWith("#produs-")) { try { history.replaceState(null, "", location.pathname); } catch(e) {} } }
 function openPanel(sel){ closeAll(); $(sel).classList.add("on"); $("#ov").classList.add("on"); }
-function goCat(id){ state.cat=id; state.onlyFav=false; state.f={pret:[],dim:[],material:[],tehnica:[]}; closeAll(); render(); $("#top").scrollIntoView({behavior:"smooth"}); }
+function goCat(id){ state.cat=id; state.onlyFav=false; state.f={disp:[],pret:[],dim:[],material:[],tehnica:[]}; closeAll(); render(); $("#top").scrollIntoView({behavior:"smooth"}); }
 
 document.addEventListener("click", e => {
   const t = e.target;
@@ -490,7 +493,7 @@ document.addEventListener("change", e => {
 });
 document.addEventListener("keydown", e => { if (e.key==="Escape"){ closeAll(); closePops(); } });
 $("#fbar").addEventListener("click", e => {
-  if (e.target.closest("#clearF")) { state.f={pret:[],dim:[],material:[],tehnica:[]}; renderFilters(); renderGrid(); }
+  if (e.target.closest("#clearF")) { state.f={disp:[],pret:[],dim:[],material:[],tehnica:[]}; renderFilters(); renderGrid(); }
   if (e.target.closest("#allf")) { const first=$("#pop-pret"); closePops(first); first.classList.toggle("on"); }
 });
 $("#q").addEventListener("input", e => { state.q = e.target.value; renderHead(); renderFilters(); renderGrid(); });
@@ -503,7 +506,8 @@ function openProduct(id){
   $("#mbox").innerHTML = `<button class="x" data-close>×</button><div class="pd"><div><div class="pimg" id="pmain">${visual(p)}</div>${(p.images||[]).length>1?`<div class="thumbs">${p.images.map((u,i)=>`<button class="th ${i?"":"on"}" data-th="${i}"><img src="${u}" alt=""></button>`).join("")}</div>`:""}</div>
     <div class="ptxt"><div class="crumbs">ArtDeco › ${catOf(p.cat).name}</div><h2>${esc(p.name)}</h2>${p.attrs?`<div style="color:var(--muted);font-size:14px;margin-top:-4px">${esc(p.attrs)}</div>`:""}<div class="pp">${lei(p.price)}</div>
     <div class="pdesc">${paras(p.desc)}</div>${(p.specs||[]).length?`<ul>${p.specs.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`:""}
-    <div class="acts">${p.sold ? `<span class="btn" style="background:#777;cursor:default">Vândut – îl putem picta la comandă</span>` : `<button class="btn" data-add="${p.id}">Adaugă în coș</button>`}
+    ${p.sold ? `<div style="background:var(--terra-l);color:#7a2f22;border-radius:12px;padding:12px 14px;font-size:14px;margin-top:6px"><b>Acest exemplar a fost vândut.</b> Îl putem realiza din nou la comandă. Fiind lucrat manual, noul exemplar va fi foarte asemănător, dar unic.</div>` : ""}
+    <div class="acts">${p.sold ? `<a class="btn green" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Bună ziua! Aș dori la comandă produsul: " + p.name + " (cod " + p.id + ")")}" target="_blank" rel="noopener">Comandă pe WhatsApp</a>` : `<button class="btn" data-add="${p.id}">Adaugă în coș</button>`}
       <button class="btn ghost" data-fav="${p.id}">${favs.includes(p.id)?"♥ Favorit":"♡ Favorite"}</button></div>
     <div class="ship"><span>🚚 Livrare prin curier în 1–3 zile lucrătoare</span><span>💵 Plata ramburs sau prin transfer</span><span>↩️ Retur în 14 zile</span></div></div></div>`;
   closeAll(); $("#modal").classList.add("on"); $("#ov").classList.add("on");
@@ -571,6 +575,7 @@ $("#yr").textContent = new Date().getFullYear();
 render(); renderCart();
 function openFromHash(){ const m = location.hash.match(/^#produs-(.+)$/); if (m && byId(m[1])) openProduct(m[1]); }
 window.addEventListener("hashchange", openFromHash);
+fetch("/api/settings").then(r => r.ok ? r.json() : null).then(s => { if (s) { $("#aboutTitle").textContent = s.aboutTitle; $("#aboutText").innerHTML = paras(s.aboutText); } }).catch(() => {});
 fetch("/api/products", {cache:"no-store"})
   .then(r => r.ok ? r.json() : Promise.reject())
   .then(list => { if (Array.isArray(list)) { PRODUCTS = list; for (const id of Object.keys(cart)) if (!byId(id)) delete cart[id]; render(); renderCart(); } })
